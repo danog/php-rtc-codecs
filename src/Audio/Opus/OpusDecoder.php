@@ -16,10 +16,10 @@ use Webrtc\AVCodec\AVFilter;
 use Webrtc\AVCodec\Exception\AvCodecException;
 use Webrtc\AVCodec\Frame\AudioFrame;
 use Webrtc\Codecs\DecoderInterface;
+use Webrtc\Codecs\JitterFrameInterface;
 use Webrtc\Opus\Decoder;
 use Webrtc\Opus\Exception\OpusException;
 use Webrtc\Opus\Opus;
-use Webrtc\RTP\Jitter\JitterFrame;
 
 /**
  * Opus Audio Decoder Class
@@ -58,11 +58,11 @@ class OpusDecoder implements DecoderInterface
     /**
      * Decode an Opus packet to audio frame(s)
      *
-     * @param JitterFrame $frame Input frame containing Opus packet and timestamp
+     * @param JitterFrameInterface $frame Input frame containing Opus packet and timestamp
      * @return array Array containing one decoded AudioFrame (Opus uses fixed frame sizes)
      * @throws OpusException
      */
-    public function decode(JitterFrame $frame): array
+    public function decode(JitterFrameInterface $frame): array
     {
         $audioFrame = new AudioFrame(samples: 960);
         $audioFrame->setPts($frame->getTimestamp());

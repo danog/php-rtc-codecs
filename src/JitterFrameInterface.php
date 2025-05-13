@@ -11,7 +11,9 @@
 
 namespace Webrtc\Codecs;
 
-interface DecoderInterface
+interface JitterFrameInterface
 {
-    public function decode(JitterFrameInterface $frame): array;
+    public function getData(): string;
+
+    public function getTimestamp(): int;
 }

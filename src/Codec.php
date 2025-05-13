@@ -25,12 +25,12 @@ use Webrtc\Codecs\Video\X264\H264Decoder;
 use Webrtc\Codecs\Video\X264\H264Encoder;
 use Webrtc\Codecs\Video\X264\H264PayloadDescriptor;
 use Webrtc\Exception\InvalidArgumentException;
-use Webrtc\RTP\Parameters\RTCRtcpFeedback;
-use Webrtc\RTP\Parameters\RTCRtpCapabilities;
-use Webrtc\RTP\Parameters\RTCRtpCodecCapability;
-use Webrtc\RTP\Parameters\RTCRtpCodecParameters;
-use Webrtc\RTP\Parameters\RTCRtpHeaderExtensionCapability;
-use Webrtc\RTP\Parameters\RTCRtpHeaderExtensionParameters;
+use Webrtc\RTPParameter\RTCRtcpFeedback;
+use Webrtc\RTPParameter\RTCRtpCapabilities;
+use Webrtc\RTPParameter\RTCRtpCodecCapability;
+use Webrtc\RTPParameter\RTCRtpCodecParameters;
+use Webrtc\RTPParameter\RTCRtpHeaderExtensionCapability;
+use Webrtc\RTPParameter\RTCRtpHeaderExtensionParameters;
 
 /**
  * WebRTC Codec Management Class

@@ -3,46 +3,10 @@
 namespace Tests\Webrtc\Codecs\Video\X264;
 
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\Webrtc\Codecs\Video\VideoEncoderTest;
-use Webrtc\AVCodec\AVCodec;
-use Webrtc\AVCodec\Codec;
-use Webrtc\Codecs\Codec as BaseCodec;
-use Webrtc\AVCodec\Context\Context;
-use Webrtc\AVCodec\Context\Dictionary;
-use Webrtc\AVCodec\Context\VideoContext;
-use Webrtc\AVCodec\Data\Buffer;
-use Webrtc\AVCodec\Data\Packet;
-use Webrtc\AVCodec\Data\VideoPlane;
-use Webrtc\AVCodec\Format\VideoFormat;
-use Webrtc\AVCodec\Format\VideoFormatComponent;
-use Webrtc\AVCodec\Frame\Frame;
-use Webrtc\AVCodec\Frame\VideoFrame;
-use Webrtc\AVCodec\TransCoder;
-use Webrtc\Codecs\Video\X264\H264Decoder;
 use Webrtc\Codecs\Video\X264\H264Encoder;
-use Webrtc\Codecs\Video\X264\H264PayloadDescriptor;
-use Webrtc\RTP\Jitter\JitterFrame;
-use Webrtc\RTP\Parameters\RTCRtpCodecParameters;
+use Webrtc\RTPParameter\RTCRtpCodecParameters;
 
-#[UsesClass(AVCodec::class)]
-#[UsesClass(Codec::class)]
-#[UsesClass(Context::class)]
-#[UsesClass(Dictionary::class)]
-#[UsesClass(VideoContext::class)]
-#[UsesClass(Buffer::class)]
-#[UsesClass(Packet::class)]
-#[UsesClass(VideoPlane::class)]
-#[UsesClass(VideoFormat::class)]
-#[UsesClass(VideoFormatComponent::class)]
-#[UsesClass(Frame::class)]
-#[UsesClass(VideoFrame::class)]
-#[UsesClass(TransCoder::class)]
-#[UsesClass(BaseCodec::class)]
-#[UsesClass(RTCRtpCodecParameters::class)]
-#[UsesClass(H264Decoder::class)]
-#[UsesClass(H264PayloadDescriptor::class)]
-#[UsesClass(JitterFrame::class)]
 #[CoversClass(H264Encoder::class)]
 class H264EncoderTest extends VideoEncoderTest
 {

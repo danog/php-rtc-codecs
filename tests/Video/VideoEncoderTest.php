@@ -5,6 +5,7 @@ namespace Tests\Webrtc\Codecs\Video;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tests\Webrtc\Codecs\Fraction;
+use Tests\Webrtc\Codecs\JitterFrame;
 use Webrtc\AVCodec\Data\Packet;
 use Webrtc\AVCodec\Exception\AvCodecException;
 use Webrtc\AVCodec\Frame\VideoFrame;
@@ -12,7 +13,6 @@ use Webrtc\Codecs\Codec;
 use Webrtc\Codecs\DecoderInterface;
 use Webrtc\Codecs\Encoder;
 use Webrtc\Codecs\EncoderInterface;
-use Webrtc\RTP\Jitter\JitterFrame;
 
 #[CoversClass(Encoder::class)]
 class VideoEncoderTest extends TestCase

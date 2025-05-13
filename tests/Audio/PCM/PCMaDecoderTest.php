@@ -6,6 +6,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Tests\Webrtc\Codecs\Fraction;
+use Tests\Webrtc\Codecs\JitterFrame;
 use Webrtc\AVCodec\Audio\AudioLayout;
 use Webrtc\AVCodec\AVCodec;
 use Webrtc\AVCodec\Codec;
@@ -19,27 +20,10 @@ use Webrtc\AVCodec\Format\AudioFormat;
 use Webrtc\AVCodec\Frame\AudioFrame;
 use Webrtc\AVCodec\Frame\Frame;
 use Webrtc\AVCodec\TransCoder;
-use Webrtc\Codecs\Codec as BaseCodec;
 use Webrtc\Codecs\Audio\PCM\PCMaDecoder;
-use Webrtc\RTP\Jitter\JitterFrame;
-use Webrtc\RTP\Parameters\RTCRtpCodecParameters;
+use Webrtc\Codecs\Codec as BaseCodec;
+use Webrtc\RTPParameter\RTCRtpCodecParameters;
 
-#[UsesClass(AVCodec::class)]
-#[UsesClass(AudioLayout::class)]
-#[UsesClass(Codec::class)]
-#[UsesClass(AudioContext::class)]
-#[UsesClass(Context::class)]
-#[UsesClass(Dictionary::class)]
-#[UsesClass(AudioPlane::class)]
-#[UsesClass(Buffer::class)]
-#[UsesClass(Packet::class)]
-#[UsesClass(AudioFormat::class)]
-#[UsesClass(AudioFrame::class)]
-#[UsesClass(Frame::class)]
-#[UsesClass(TransCoder::class)]
-#[UsesClass(BaseCodec::class)]
-#[UsesClass(JitterFrame::class)]
-#[UsesClass(RTCRtpCodecParameters::class)]
 #[CoversClass(PCMaDecoder::class)]
 class PCMaDecoderTest extends TestCase
 {

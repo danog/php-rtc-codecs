@@ -11,8 +11,8 @@
 
 namespace Webrtc\Codecs;
 
-use Webrtc\RTP\Parameters\RTCRtpCodecCapability;
-use Webrtc\RTP\Parameters\RTCRtpCodecParameters;
+use Webrtc\RTPParameter\RTCRtpCodecCapability;
+use Webrtc\RTPParameter\RTCRtpCodecParameters;
 
 /**
  * Codec Utility Class

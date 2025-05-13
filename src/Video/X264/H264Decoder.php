@@ -19,7 +19,7 @@ use Webrtc\AVCodec\Data\Packet;
 use Webrtc\AVCodec\Exception\AvCodecException;
 use Webrtc\AVCodec\TransCoder;
 use Webrtc\Codecs\DecoderInterface;
-use Webrtc\RTP\Jitter\JitterFrame;
+use Webrtc\Codecs\JitterFrameInterface;
 
 /**
  * H.264 Video Decoder Class
@@ -54,13 +54,13 @@ class H264Decoder implements DecoderInterface
     /**
      * Decodes an H.264 encoded frame
      *
-     * @param JitterFrame $frame Input frame containing:
+     * @param JitterFrameInterface $frame Input frame containing:
      *                          - Data: Encoded H.264 payload
      *                          - timestamp: Presentation timestamp
      * @return array Array of decoded VideoFrame objects
      *               Empty array on decoding failure
      */
-    public function decode(JitterFrame $frame): array
+    public function decode(JitterFrameInterface $frame): array
     {
         try {
             $packet = new Packet();

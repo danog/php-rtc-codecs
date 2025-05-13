@@ -5,13 +5,13 @@ namespace Tests\Webrtc\Codecs\Audio;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tests\Webrtc\Codecs\Fraction;
+use Tests\Webrtc\Codecs\JitterFrame;
 use Webrtc\AVCodec\Data\Packet;
 use Webrtc\AVCodec\Frame\AudioFrame;
 use Webrtc\Codecs\Codec;
 use Webrtc\Codecs\DecoderInterface;
 use Webrtc\Codecs\Encoder;
 use Webrtc\Codecs\EncoderInterface;
-use Webrtc\RTP\Jitter\JitterFrame;
 
 #[CoversClass(Encoder::class)]
 class AudioEncoderTest extends TestCase

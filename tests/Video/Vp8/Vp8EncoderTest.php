@@ -3,68 +3,10 @@
 namespace Tests\Webrtc\Codecs\Video\Vp8;
 
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\Webrtc\Codecs\Video\VideoEncoderTest;
-use Webrtc\AVCodec\AVCodec;
-use Webrtc\AVCodec\Data\Buffer;
-use Webrtc\AVCodec\Data\Packet;
-use Webrtc\AVCodec\Data\VideoPlane;
-use Webrtc\AVCodec\Format\VideoFormat;
-use Webrtc\AVCodec\Format\VideoFormatComponent;
-use Webrtc\AVCodec\Frame\Frame;
-use Webrtc\AVCodec\Frame\VideoFrame;
-use Webrtc\AVCodec\Frame\VideoFrameReformater;
-use Webrtc\AVCodec\SWScale;
-use Webrtc\Codecs\Codec;
-use Webrtc\Codecs\CodecUtility;
-use Webrtc\Codecs\Video\Vp8\Vp8Decoder;
 use Webrtc\Codecs\Video\Vp8\Vp8Encoder;
-use Webrtc\Codecs\Video\Vp8\Vp8PayloadDescriptor;
-use Webrtc\RTP\Jitter\JitterFrame;
-use Webrtc\RTP\Parameters\RTCRtpCodecParameters;
-use Webrtc\VPX\Context;
-use Webrtc\VPX\Decoder;
-use Webrtc\VPX\Vpx;
+use Webrtc\RTPParameter\RTCRtpCodecParameters;
 
-/*
- * Webrtc\AVCodec\AVCodec
-- Webrtc\AVCodec\Data\Buffer
-- Webrtc\AVCodec\Data\VideoPlane
-- Webrtc\AVCodec\Format\VideoFormat
-- Webrtc\AVCodec\Format\VideoFormatComponent
-- Webrtc\AVCodec\Frame\Frame
-- Webrtc\AVCodec\Frame\VideoFrame
-- Webrtc\AVCodec\SWScale
-- Webrtc\Codecs\Codec
-- Webrtc\Codecs\CodecUtility
-- Webrtc\Codecs\Video\Vp8\Vp8Decoder
-- Webrtc\Codecs\Video\Vp8\Vp8PayloadDescriptor
-- Webrtc\RTP\Jitter\JitterFrame
-- Webrtc\RTP\Parameters\RTCRtpCodecParameters
-- Webrtc\VPX\Context
-- Webrtc\VPX\Decoder
-- Webrtc\VPX\Vpx
-*/
-
-#[UsesClass(AVCodec::class)]
-#[UsesClass(Buffer::class)]
-#[UsesClass(VideoPlane::class)]
-#[UsesClass(VideoFormat::class)]
-#[UsesClass(VideoFormatComponent::class)]
-#[UsesClass(Frame::class)]
-#[UsesClass(VideoFrame::class)]
-#[UsesClass(SWScale::class)]
-#[UsesClass(Codec::class)]
-#[UsesClass(CodecUtility::class)]
-#[UsesClass(Vp8Decoder::class)]
-#[UsesClass(Vp8PayloadDescriptor::class)]
-#[UsesClass(JitterFrame::class)]
-#[UsesClass(RTCRtpCodecParameters::class)]
-#[UsesClass(Context::class)]
-#[UsesClass(Decoder::class)]
-#[UsesClass(Packet::class)]
-#[UsesClass(VideoFrameReformater::class)]
-#[UsesClass(Vpx::class)]
 #[CoversClass(Vp8Encoder::class)]
 class Vp8EncoderTest extends VideoEncoderTest
 {

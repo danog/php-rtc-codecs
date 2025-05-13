@@ -3,33 +3,14 @@
 namespace Tests\Webrtc\Codecs;
 
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
-use Webrtc\AVCodec\Frame\AudioFrame;
-use Webrtc\AVCodec\Frame\Frame;
 use Webrtc\Codecs\Codec;
-use Webrtc\Codecs\CodecUtility;
 use Webrtc\Exception\InvalidArgumentException;
-use Webrtc\Opus\Decoder;
-use Webrtc\Opus\Encoder;
-use Webrtc\RTP\Parameters\RTCRtcpFeedback;
-use Webrtc\RTP\Parameters\RTCRtpCapabilities;
-use Webrtc\RTP\Parameters\RTCRtpCodecCapability;
-use Webrtc\RTP\Parameters\RTCRtpCodecParameters;
-use Webrtc\RTP\Parameters\RTCRtpHeaderExtensionCapability;
-use Webrtc\RTP\Parameters\RTCRtpHeaderExtensionParameters;
+use Webrtc\RTPParameter\RTCRtpCapabilities;
+use Webrtc\RTPParameter\RTCRtpCodecCapability;
+use Webrtc\RTPParameter\RTCRtpCodecParameters;
+use Webrtc\RTPParameter\RTCRtpHeaderExtensionCapability;
 
-#[UsesClass(AudioFrame::class)]
-#[UsesClass(Frame::class)]
-#[UsesClass(Decoder::class)]
-#[UsesClass(Encoder::class)]
-#[UsesClass(RTCRtpCodecParameters::class)]
-#[UsesClass(CodecUtility::class)]
-#[UsesClass(RTCRtpCapabilities::class)]
-#[UsesClass(RTCRtpCodecCapability::class)]
-#[UsesClass(RTCRtpHeaderExtensionCapability::class)]
-#[UsesClass(RTCRtpHeaderExtensionParameters::class)]
-#[UsesClass(RTCRtcpFeedback::class)]
 #[CoversClass(Codec::class)]
 class CodecTest extends TestCase
 {

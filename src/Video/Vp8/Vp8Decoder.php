@@ -16,7 +16,7 @@ use Webrtc\AVCodec\AVCodec;
 use Webrtc\AVCodec\Exception\AvCodecException;
 use Webrtc\AVCodec\Frame\VideoFrame;
 use Webrtc\Codecs\DecoderInterface;
-use Webrtc\RTP\Jitter\JitterFrame;
+use Webrtc\Codecs\JitterFrameInterface;
 use Webrtc\VPX\Context;
 use Webrtc\VPX\Decoder;
 use Webrtc\VPX\Enum\BriefInterface;
@@ -58,12 +58,12 @@ class Vp8Decoder implements DecoderInterface
     /**
      * Decodes a VP8-encoded video frame
      *
-     * @param JitterFrame $frame Input frame containing VP8 payload and timestamp
+     * @param JitterFrameInterface $frame Input frame containing VP8 payload and timestamp
      * @return VideoFrame[] Array of decoded video frames
      * @throws VpxException
      * @throws AvCodecException
      */
-    public function decode(JitterFrame $frame): array
+    public function decode(JitterFrameInterface $frame): array
     {
         $frames = [];
         $images = $this->decoder->decode($frame->getData());
@@ -79,11 +79,11 @@ class Vp8Decoder implements DecoderInterface
      * Creates a VideoFrame from decoded image data
      *
      * @param CData $image Decoded image data from libvpx
-     * @param JitterFrame $frame Source frame with timestamp
+     * @param JitterFrameInterface $frame Source frame with timestamp
      * @return VideoFrame Configured video frame object
      * @throws AvCodecException
      */
-    private function generateFrame(CData $image, JitterFrame $frame): VideoFrame
+    private function generateFrame(CData $image, JitterFrameInterface $frame): VideoFrame
     {
         $videoFrame = new VideoFrame($image->d_w, $image->d_h);
         $videoFrame->setPts($frame->getTimestamp());

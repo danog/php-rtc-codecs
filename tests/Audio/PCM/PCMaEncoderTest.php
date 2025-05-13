@@ -3,60 +3,10 @@
 namespace Tests\Webrtc\Codecs\Audio\PCM;
 
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\Webrtc\Codecs\Audio\AudioEncoderTest;
-use Webrtc\AVCodec\Audio\AudioLayout;
-use Webrtc\AVCodec\Audio\AudioResampler;
-use Webrtc\AVCodec\AVCodec;
-use Webrtc\AVCodec\AVFilter;
-use Webrtc\AVCodec\Codec;
-use Webrtc\Codecs\Audio\PCM\PCMaDecoder;
-use Webrtc\Codecs\Audio\PCM\PCMDecoder;
-use Webrtc\Codecs\Codec as BaseCodec;
-use Webrtc\AVCodec\Context\AudioContext;
-use Webrtc\AVCodec\Context\Context;
-use Webrtc\AVCodec\Context\Dictionary;
-use Webrtc\AVCodec\Data\AudioPlane;
-use Webrtc\AVCodec\Data\Buffer;
-use Webrtc\AVCodec\Data\Packet;
-use Webrtc\AVCodec\Filter\Filter;
-use Webrtc\AVCodec\Filter\FilterContext;
-use Webrtc\AVCodec\Filter\Graph;
-use Webrtc\AVCodec\Format\AudioFormat;
-use Webrtc\AVCodec\Frame\AudioFrame;
-use Webrtc\AVCodec\Frame\Frame;
-use Webrtc\AVCodec\TransCoder;
 use Webrtc\Codecs\Audio\PCM\PCMaEncoder;
-use Webrtc\Opus\Decoder;
-use Webrtc\Opus\Encoder;
-use Webrtc\RTP\Jitter\JitterFrame;
-use Webrtc\RTP\Parameters\RTCRtpCodecParameters;
+use Webrtc\RTPParameter\RTCRtpCodecParameters;
 
-#[UsesClass(AVCodec::class)]
-#[UsesClass(AVFilter::class)]
-#[UsesClass(AudioLayout::class)]
-#[UsesClass(AudioResampler::class)]
-#[UsesClass(Codec::class)]
-#[UsesClass(AudioContext::class)]
-#[UsesClass(Context::class)]
-#[UsesClass(Dictionary::class)]
-#[UsesClass(AudioPlane::class)]
-#[UsesClass(Buffer::class)]
-#[UsesClass(Packet::class)]
-#[UsesClass(Filter::class)]
-#[UsesClass(FilterContext::class)]
-#[UsesClass(Graph::class)]
-#[UsesClass(AudioFormat::class)]
-#[UsesClass(AudioFrame::class)]
-#[UsesClass(Frame::class)]
-#[UsesClass(TransCoder::class)]
-#[UsesClass(BaseCodec::class)]
-#[UsesClass(RTCRtpCodecParameters::class)]
-#[UsesClass(PCMDecoder::class)]
-#[UsesClass(PCMaDecoder::class)]
-#[UsesClass(JitterFrame::class)]
-#[UsesClass(Decoder::class)]
-#[UsesClass(Encoder::class)]
 #[CoversClass(PCMaEncoder::class)]
 class PCMaEncoderTest extends AudioEncoderTest
 {

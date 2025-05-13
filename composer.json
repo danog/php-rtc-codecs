@@ -34,7 +34,7 @@
     "quasarstream/vpx": "^1.0",
     "quasarstream/opus": "^1.0",
     "quasarstream/av": "^1.0",
-    "quasarstream/rtp": "^1.0"
+    "quasarstream/rtp-parameter": "^1.0"
   },
   "require-dev": {
     "phpunit/php-code-coverage": "11.0.x-dev",

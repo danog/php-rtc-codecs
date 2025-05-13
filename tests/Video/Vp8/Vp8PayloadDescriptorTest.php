@@ -3,18 +3,11 @@
 namespace Tests\Webrtc\Codecs\Video\Vp8;
 
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
-use Webrtc\AVCodec\Context\Context;
-use Webrtc\AVCodec\Frame\AudioFrame;
-use Webrtc\AVCodec\Frame\Frame;
 use Webrtc\Codecs\Video\Vp8\Vp8PayloadDescriptor;
 use PHPUnit\Framework\TestCase;
 use Webrtc\Exception\InvalidArgumentException;
 
-#[UsesClass(AudioFrame::class)]
-#[UsesClass(Frame::class)]
 #[CoversClass(Vp8PayloadDescriptor::class)]
-#[CoversClass(Context::class)]
 class Vp8PayloadDescriptorTest extends TestCase
 {
     public function testNoPictureId() {

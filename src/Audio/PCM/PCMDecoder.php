@@ -18,7 +18,7 @@ use Webrtc\AVCodec\Data\Packet;
 use Webrtc\AVCodec\Exception\AvCodecException;
 use Webrtc\AVCodec\TransCoder;
 use Webrtc\Codecs\DecoderInterface;
-use Webrtc\RTP\Jitter\JitterFrame;
+use Webrtc\Codecs\JitterFrameInterface;
 
 /**
  * PCM Audio Decoder Abstract Base Class
@@ -60,10 +60,10 @@ abstract class PCMDecoder implements DecoderInterface
     /**
      * Decode an audio packet to PCM frames
      *
-     * @param JitterFrame $frame Input frame containing encoded audio and timestamp
+     * @param JitterFrameInterface $frame Input frame containing encoded audio and timestamp
      * @return array Array of decoded AudioFrame objects
      */
-    public function decode(JitterFrame $frame): array
+    public function decode(JitterFrameInterface $frame): array
     {
         $packet = new Packet();
         $packet->putData($frame->getData());
