@@ -1,0 +1,73 @@
+name: Codecs TESTS
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP 8.4 with FFI
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          tools: composer:v2
+          extensions: ffi
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate --strict
+
+      - name: Cache Composer packages
+        id: composer-cache
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Install FFmpeg 7.1.1 with libx264, libopus, libvpx 1.15.0
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            autoconf automake build-essential cmake git libtool pkg-config \
+            yasm nasm wget unzip libssl-dev \
+            libx264-dev libopus-dev
+
+          # Install libvpx 1.15.0
+          git clone --branch v1.15.0 https://chromium.googlesource.com/webm/libvpx.git
+          cd libvpx
+          ./configure --disable-examples --disable-unit-tests --enable-vp9-highbitdepth --as=yasm
+          make -j$(nproc)
+          sudo make install
+          cd ..
+
+          # Install FFmpeg 7.1.1
+          wget https://ffmpeg.org/releases/ffmpeg-7.1.1.tar.bz2
+          tar xjf ffmpeg-7.1.1.tar.bz2
+          cd ffmpeg-7.1.1
+          ./configure --enable-shared --enable-gpl --enable-libx264 --enable-libopus --enable-libvpx
+          make -j$(nproc)
+          sudo make install
+          sudo ldconfig
+          cd ..
+
+      - name: Check PHP version and extensions
+        run: |
+          php -v
+          php -m | grep -i gmp
+
+      - name: Run PHPUnit tests
+        run: vendor/bin/phpunit
