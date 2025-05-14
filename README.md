@@ -1,7 +1,7 @@
 # WebRTC Codec Package
 
 ![PHP Version](https://img.shields.io/badge/PHP-8.4%2B-blue)
-![License](https://img.shields.io/badge/License-MIT-green)
+![License](https://img.shields.io/badge/License-BSD-blue)
 
 A comprehensive codec implementation package for WebRTC applications, providing audio/video encoding and decoding capabilities.
 
