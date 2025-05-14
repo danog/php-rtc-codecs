@@ -3,18 +3,20 @@
 namespace Tests\Webrtc\Codecs;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Webrtc\Codecs\Codec;
+use Webrtc\Codecs\CodecUtility;
 use Webrtc\Exception\InvalidArgumentException;
 use Webrtc\RTPParameter\RTCRtpCapabilities;
 use Webrtc\RTPParameter\RTCRtpCodecCapability;
 use Webrtc\RTPParameter\RTCRtpCodecParameters;
 use Webrtc\RTPParameter\RTCRtpHeaderExtensionCapability;
 
+#[UsesClass(CodecUtility::class)]
 #[CoversClass(Codec::class)]
 class CodecTest extends TestCase
 {
-
     public function testCapabilities() {
         // audio
         $codec = new Codec();

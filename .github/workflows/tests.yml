@@ -46,23 +46,29 @@ jobs:
             yasm nasm wget unzip libssl-dev \
             libx264-dev libopus-dev
 
-          # Install libvpx 1.15.0
-          git clone --branch v1.15.0 https://chromium.googlesource.com/webm/libvpx.git
-          cd libvpx
-          ./configure --disable-examples --disable-unit-tests --enable-vp9-highbitdepth --as=yasm
-          make -j$(nproc)
-          sudo make install
-          cd ..
-
           # Install FFmpeg 7.1.1
           wget https://ffmpeg.org/releases/ffmpeg-7.1.1.tar.bz2
           tar xjf ffmpeg-7.1.1.tar.bz2
           cd ffmpeg-7.1.1
-          ./configure --enable-shared --enable-gpl --enable-libx264 --enable-libopus --enable-libvpx
+          ./configure --enable-shared --enable-gpl --enable-libx264 --enable-libopus
           make -j$(nproc)
           sudo make install
           sudo ldconfig
           cd ..
+          
+          # Build and install libvpx
+          mkdir -p ~/vpx_sources
+          cd ~/vpx_sources
+          curl -LO https://github.com/webmproject/libvpx/archive/refs/tags/v1.15.0.tar.gz
+          tar xzvf v1.15.0.tar.gz
+          cd libvpx-1.15.0
+
+          ./configure --prefix=/usr/local --enable-shared --disable-examples
+          make -j$(nproc)
+          sudo make install
+          sudo ldconfig
+
+          pkg-config --modversion vpx || echo "libvpx not found"
 
       - name: Check PHP version and extensions
         run: |

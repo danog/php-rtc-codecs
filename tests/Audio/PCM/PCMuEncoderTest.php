@@ -3,10 +3,17 @@
 namespace Tests\Webrtc\Codecs\Audio\PCM;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\Webrtc\Codecs\Audio\AudioEncoderTest;
+use Webrtc\Codecs\Audio\PCM\PCMDecoder;
+use Webrtc\Codecs\Audio\PCM\PCMuDecoder;
 use Webrtc\Codecs\Audio\PCM\PCMuEncoder;
+use Webrtc\Codecs\Codec;
 use Webrtc\RTPParameter\RTCRtpCodecParameters;
 
+#[UsesClass(PCMDecoder::class)]
+#[UsesClass(PCMuDecoder::class)]
+#[UsesClass(Codec::class)]
 #[CoversClass(PCMuEncoder::class)]
 class PCMuEncoderTest extends AudioEncoderTest
 {

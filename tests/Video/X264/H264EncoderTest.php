@@ -3,10 +3,17 @@
 namespace Tests\Webrtc\Codecs\Video\X264;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\Webrtc\Codecs\Video\VideoEncoderTest;
+use Webrtc\Codecs\Codec;
+use Webrtc\Codecs\Video\X264\H264Decoder;
 use Webrtc\Codecs\Video\X264\H264Encoder;
+use Webrtc\Codecs\Video\X264\H264PayloadDescriptor;
 use Webrtc\RTPParameter\RTCRtpCodecParameters;
 
+#[UsesClass(Codec::class)]
+#[UsesClass(H264Decoder::class)]
+#[UsesClass(H264PayloadDescriptor::class)]
 #[CoversClass(H264Encoder::class)]
 class H264EncoderTest extends VideoEncoderTest
 {

@@ -7,23 +7,12 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Tests\Webrtc\Codecs\Fraction;
 use Tests\Webrtc\Codecs\JitterFrame;
-use Webrtc\AVCodec\Audio\AudioLayout;
-use Webrtc\AVCodec\AVCodec;
-use Webrtc\AVCodec\Codec;
-use Webrtc\AVCodec\Context\AudioContext;
-use Webrtc\AVCodec\Context\Context;
-use Webrtc\AVCodec\Context\Dictionary;
-use Webrtc\AVCodec\Data\AudioPlane;
-use Webrtc\AVCodec\Data\Buffer;
-use Webrtc\AVCodec\Data\Packet;
-use Webrtc\AVCodec\Format\AudioFormat;
-use Webrtc\AVCodec\Frame\AudioFrame;
-use Webrtc\AVCodec\Frame\Frame;
-use Webrtc\AVCodec\TransCoder;
 use Webrtc\Codecs\Audio\PCM\PCMaDecoder;
+use Webrtc\Codecs\Codec;
 use Webrtc\Codecs\Codec as BaseCodec;
 use Webrtc\RTPParameter\RTCRtpCodecParameters;
 
+#[UsesClass(Codec::class)]
 #[CoversClass(PCMaDecoder::class)]
 class PCMaDecoderTest extends TestCase
 {

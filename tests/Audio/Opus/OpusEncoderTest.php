@@ -3,10 +3,15 @@
 namespace Tests\Webrtc\Codecs\Audio\Opus;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\Webrtc\Codecs\Audio\AudioEncoderTest;
+use Webrtc\Codecs\Audio\Opus\OpusDecoder;
 use Webrtc\Codecs\Audio\Opus\OpusEncoder;
+use Webrtc\Codecs\Codec;
 use Webrtc\RTPParameter\RTCRtpCodecParameters;
 
+#[UsesClass(Codec::class)]
+#[UsesClass(OpusDecoder::class)]
 #[CoversClass(OpusEncoder::class)]
 class OpusEncoderTest extends AudioEncoderTest
 {

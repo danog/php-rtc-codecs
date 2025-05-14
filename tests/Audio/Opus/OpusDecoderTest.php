@@ -3,6 +3,7 @@
 namespace Tests\Webrtc\Codecs\Audio\Opus;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Tests\Webrtc\Codecs\Fraction;
 use Tests\Webrtc\Codecs\JitterFrame;
@@ -10,6 +11,7 @@ use Webrtc\Codecs\Audio\Opus\OpusDecoder;
 use Webrtc\Codecs\Codec;
 use Webrtc\RTPParameter\RTCRtpCodecParameters;
 
+#[UsesClass(Codec::class)]
 #[CoversClass(OpusDecoder::class)]
 class OpusDecoderTest extends TestCase
 {

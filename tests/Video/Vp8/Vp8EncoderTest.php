@@ -3,10 +3,19 @@
 namespace Tests\Webrtc\Codecs\Video\Vp8;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\Webrtc\Codecs\Video\VideoEncoderTest;
+use Webrtc\Codecs\Codec;
+use Webrtc\Codecs\CodecUtility;
+use Webrtc\Codecs\Video\Vp8\Vp8Decoder;
 use Webrtc\Codecs\Video\Vp8\Vp8Encoder;
+use Webrtc\Codecs\Video\Vp8\Vp8PayloadDescriptor;
 use Webrtc\RTPParameter\RTCRtpCodecParameters;
 
+#[UsesClass(Codec::class)]
+#[UsesClass(CodecUtility::class)]
+#[UsesClass(Vp8Decoder::class)]
+#[UsesClass(Vp8PayloadDescriptor::class)]
 #[CoversClass(Vp8Encoder::class)]
 class Vp8EncoderTest extends VideoEncoderTest
 {
