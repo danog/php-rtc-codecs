@@ -17,6 +17,6 @@ use Webrtc\AVCodec\Frame\FrameInterface;
 interface EncoderInterface
 {
     public function encode(FrameInterface $frame, bool $useKeyframe): string|array;
-    public function pack(Packet $packet): string|array;
+    public function pack(Packet|EncodedPacket $packet): string|array;
     public function setBitrate(int $bitrate): void;
 }

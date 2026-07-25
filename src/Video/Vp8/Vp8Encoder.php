@@ -15,6 +15,7 @@ use FFI;
 use FFI\CData;
 use Webrtc\AVCodec\AVCodec;
 use Webrtc\AVCodec\Data\Packet;
+use Webrtc\Codecs\EncodedPacket;
 use Webrtc\AVCodec\Exception\AvCodecException;
 use Webrtc\AVCodec\Frame\FrameInterface;
 use Webrtc\AVCodec\Frame\VideoFrame;
@@ -47,6 +48,14 @@ class Vp8Encoder extends Encoder implements SharedLibraryInterface
      * @var int MAX_FRAME_RATE Maximum supported frame rate (30fps)
      */
     private const int MAX_FRAME_RATE = 30;
+
+    /**
+     * Maximum RTP payload size.
+     *
+     * Upstream reads this from the global PACKET_MAX constant, which is only defined as a side
+     * effect of loading libvpx; packetizing an already-encoded frame must not require FFI.
+     */
+    private const int PACKET_MAX = 1300;
 
     /**
      * @var int $pictureId Current picture identifier (15-bit)
@@ -111,6 +120,22 @@ class Vp8Encoder extends Encoder implements SharedLibraryInterface
      */
     public function __construct()
     {
+        // Only the picture ID is needed to packetize already-encoded VP8 frames; libvpx is
+        // loaded lazily, on the first real encode.
+        $this->pictureId = rand(0, (1 << 15) - 1);
+    }
+
+    /**
+     * Load libvpx/libav on demand.
+     *
+     * @throws VpxException
+     * @throws AvCodecException
+     */
+    private function ensureEncoder(): void
+    {
+        if (isset($this->cx)) {
+            return;
+        }
         Vpx::init();
         AVCodec::init();
         SWScale::init();
@@ -121,7 +146,6 @@ class Vp8Encoder extends Encoder implements SharedLibraryInterface
 
         // Configure encoder
         $this->vpxAssert($this->libVpx->vpx_codec_enc_config_default($this->cx, FFI::addr($this->config), 0));
-        $this->pictureId = rand(0, (1 << 15) - 1);
     }
 
     /**
@@ -133,6 +157,7 @@ class Vp8Encoder extends Encoder implements SharedLibraryInterface
      */
     public function encode(FrameInterface|VideoFrame $frame, bool $useKeyframe = false): array
     {
+        $this->ensureEncoder();
         if ($frame->getVideoFormat()->getName() !== "yuv420p") {
             $frame = $frame->reformat(format: "yuv420p");
         }
@@ -187,10 +212,12 @@ class Vp8Encoder extends Encoder implements SharedLibraryInterface
      * @param Packet $packet Encoded video packet
      * @return array [payloads, timestamp] Packets and converted timestamp
      */
-    public function pack(Packet $packet): array
+    public function pack(Packet|EncodedPacket $packet): array
     {
         $payloads = $this->packetize($packet->getData(), $this->pictureId);
-        $timestamp = $this->convertTimebase($packet->getPts(), (array)$packet->getTimeBase(), [1, self::VIDEO_CLOCK_RATE]);
+        $timestamp = $packet instanceof EncodedPacket
+            ? $packet->getTimestamp()
+            : $this->convertTimebase($packet->getPts(), (array)$packet->getTimeBase(), [1, self::VIDEO_CLOCK_RATE]);
         $this->pictureId = ($this->pictureId + 1) % (1 << 15);
         return [$payloads, $timestamp];
     }
@@ -213,7 +240,7 @@ class Vp8Encoder extends Encoder implements SharedLibraryInterface
 
         while ($pos < $length) {
             $descrBytes = $descr->encode();
-            $size = min($length - $pos, PACKET_MAX - strlen($descrBytes));
+            $size = min($length - $pos, self::PACKET_MAX - strlen($descrBytes));
             $payloads[] = $descrBytes . substr($buffer, $pos, $size);
             $descr->setPartitionStart(0); // Update the descriptor's partition start flag
             $pos += $size;

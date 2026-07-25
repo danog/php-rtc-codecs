@@ -16,6 +16,7 @@ use Webrtc\AVCodec\AVFilter;
 use Webrtc\AVCodec\Codec;
 use Webrtc\AVCodec\Context\AudioContext;
 use Webrtc\AVCodec\Data\Packet;
+use Webrtc\Codecs\EncodedPacket;
 use Webrtc\AVCodec\Exception\AvCodecException;
 use Webrtc\AVCodec\Frame\AudioFrame;
 use Webrtc\AVCodec\Frame\FrameInterface;
@@ -86,7 +87,7 @@ abstract class PCMEncoder extends Encoder implements EncoderInterface
      * @param Packet $packet Encoded audio packet
      * @return array|string [packets, pts] Array containing packet data and converted timestamp
      */
-    public function pack(Packet $packet): string|array
+    public function pack(Packet|EncodedPacket $packet): string|array
     {
         return [[$packet->getData()], $this->convertTimebase($packet->getPts(), (array)$packet->getTimeBase(), [1, 8000])];
     }

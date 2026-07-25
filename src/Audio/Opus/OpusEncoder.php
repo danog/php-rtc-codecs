@@ -15,6 +15,7 @@ use Webrtc\AVCodec\Audio\AudioResampler;
 use Webrtc\AVCodec\AVCodec;
 use Webrtc\AVCodec\AVFilter;
 use Webrtc\AVCodec\Data\Packet;
+use Webrtc\Codecs\EncodedPacket;
 use Webrtc\AVCodec\Exception\AvCodecException;
 use Webrtc\AVCodec\Frame\AudioFrame;
 use Webrtc\AVCodec\Frame\FrameInterface;
@@ -65,6 +66,21 @@ class OpusEncoder extends BEncoder implements EncoderInterface
      */
     public function __construct()
     {
+        // The native libraries are only loaded on the first actual encode: packing an
+        // already-encoded OPUS frame for RTP needs no codec at all, so FFI stays optional.
+    }
+
+    /**
+     * Load libopus/libav on demand.
+     *
+     * @throws OpusException
+     * @throws AvCodecException
+     */
+    private function ensureEncoder(): void
+    {
+        if (isset($this->encoder)) {
+            return;
+        }
         Opus::init();
         AVCodec::init();
         AVFilter::init();
@@ -84,6 +100,7 @@ class OpusEncoder extends BEncoder implements EncoderInterface
      */
     public function encode(FrameInterface|AudioFrame $frame, bool $useKeyframe = false): string|array
     {
+        $this->ensureEncoder();
         $this->validateFrame($frame);
         $frames = $this->resampler->resample($frame);
 
@@ -102,8 +119,12 @@ class OpusEncoder extends BEncoder implements EncoderInterface
      * @param Packet $packet Encoded audio packet
      * @return array|string [packets, pts] Array containing packet data and converted timestamp
      */
-    public function pack(Packet $packet): string|array
+    public function pack(Packet|EncodedPacket $packet): string|array
     {
+        if ($packet instanceof EncodedPacket) {
+            // Already timed in the 48kHz OPUS clock: pass it straight through, no codec needed.
+            return [[$packet->getData()], $packet->getTimestamp()];
+        }
         return [[$packet->getData()], $this->convertTimebase($packet->getPts(), (array)$packet->getTimeBase(), [1, 48000])];
     }
 

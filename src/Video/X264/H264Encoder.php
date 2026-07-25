@@ -19,6 +19,7 @@ use Webrtc\AVCodec\Codec;
 use Webrtc\AVCodec\Context\Context;
 use Webrtc\AVCodec\Context\VideoContext;
 use Webrtc\AVCodec\Data\Packet;
+use Webrtc\Codecs\EncodedPacket;
 use Webrtc\AVCodec\Enum\PictureType;
 use Webrtc\AVCodec\Exception\AvCodecException;
 use Webrtc\AVCodec\Format\VideoFormat;
@@ -79,6 +80,16 @@ class H264Encoder extends Encoder implements EncoderInterface
      * @throws AvCodecException
      */
     public function __construct()
+    {
+        // Packetizing an already-encoded H.264 bitstream needs no codec: libav is loaded lazily.
+    }
+
+    /**
+     * Load libav on demand.
+     *
+     * @throws AvCodecException
+     */
+    private function ensureEncoder(): void
     {
         AVCodec::init();
     }
@@ -314,6 +325,7 @@ class H264Encoder extends Encoder implements EncoderInterface
             throw new InvalidArgumentException("");
         }
 
+        $this->ensureEncoder();
         $packets = $this->encodeFrame($frame, $useKeyframe);
         $timestamp = $this->convertTimebase($frame->getPts(), (array)$frame->getTimeBase(), [1, 90000]);
 
@@ -368,10 +380,12 @@ class H264Encoder extends Encoder implements EncoderInterface
      * @param Packet $packet Encoded packet
      * @return array [packets, timestamp]
      */
-    public function pack(Packet $packet): array
+    public function pack(Packet|EncodedPacket $packet): array
     {
         $packages = $this->splitBitstream($packet->getData());
-        $timestamp = $this->convertTimebase($packet->getPts(), (array)$packet->getTimeBase(), [1, 90000]);
+        $timestamp = $packet instanceof EncodedPacket
+            ? $packet->getTimestamp()
+            : $this->convertTimebase($packet->getPts(), (array)$packet->getTimeBase(), [1, 90000]);
 
         return [$this->packetize($packages), $timestamp];
     }
