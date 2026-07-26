@@ -88,7 +88,7 @@ class AudioEncoderTest extends TestCase
                 $this->assertEquals($outputSampleRate, $frames[0]->getSampleRate());
                 $this->assertEquals($i * $outputSampleCount, $frames[0]->getPts());
                 $this->assertEquals(
-                    new Fraction(1, $outputSampleRate)(),
+                    (new Fraction(1, $outputSampleRate))(),
                     $frames[0]->getTimeBase()
                 );
             }

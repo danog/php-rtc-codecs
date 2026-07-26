@@ -87,7 +87,7 @@ class VideoEncoderTest extends TestCase
             $this->assertEquals($frame->getVideoFormat()->getHeight(), $frames[0]->getVideoFormat()->getHeight());
             // there is a bug in FFMpeg library (Rounding and Time Base Issues) - (in some version of ffmpeg it fixed)
             $this->assertEquals($i * 3000, $frames[0]->getPts() % 3000 === 0 ? $frames[0]->getPts() : $frames[0]->getPts() + 1);
-            $this->assertEquals(new Fraction(1, 90000)(), $frames[0]->getTimeBase());
+            $this->assertEquals((new Fraction(1, 90000))(), $frames[0]->getTimeBase());
         }
     }
 

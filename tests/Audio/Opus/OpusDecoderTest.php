@@ -38,6 +38,6 @@ class OpusDecoderTest extends TestCase
         $this->assertEquals(str_repeat("\x00", 4 * 960), $frame->getPlanes()[0]->getData());
         $this->assertEquals(48000, $frame->getSampleRate());
         $this->assertEquals(0, $frame->getPts());
-        $this->assertEquals(new Fraction(1, 48000)(), $frame->getTimeBase());
+        $this->assertEquals((new Fraction(1, 48000))(), $frame->getTimeBase());
     }
 }

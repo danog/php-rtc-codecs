@@ -42,14 +42,14 @@ use Webrtc\Exception\RuntimeException;
  */
 class H264Encoder extends Encoder implements EncoderInterface
 {
-    private const int  FU_A_HEADER_SIZE = 2;
-    private const int  NAL_TYPE_FU_A = 28;
-    private const int  NAL_TYPE_STAP_A = 24;
-    private const int  NAL_HEADER_SIZE = 1;
-    private const int  LENGTH_FIELD_SIZE = 2;
-    private const int  STAP_A_HEADER_SIZE = 1;
-    private const array DEFAULT_CODEC_NAMES = ["h264_omx", "libx264"]; // Based on their priorities
-    private const int PACKET_MAX = 1300; // Maximum packet size.
+    private const FU_A_HEADER_SIZE = 2;
+    private const NAL_TYPE_FU_A = 28;
+    private const NAL_TYPE_STAP_A = 24;
+    private const NAL_HEADER_SIZE = 1;
+    private const LENGTH_FIELD_SIZE = 2;
+    private const STAP_A_HEADER_SIZE = 1;
+    private const DEFAULT_CODEC_NAMES = ["h264_omx", "libx264"]; // Based on their priorities
+    private const PACKET_MAX = 1300; // Maximum packet size.
     /**
      * @var string $bufferData Buffered encoded data
      */

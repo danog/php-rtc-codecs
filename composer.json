@@ -28,8 +28,7 @@
         }
     ],
     "require": {
-        "php": "^8.4",
-        "ext-ffi": "*",
+        "php": "^8.2",
         "quasarstream/exception": "^1.0",
         "quasarstream/vpx": "^1.0",
         "quasarstream/opus": "^1.0",
@@ -64,5 +63,8 @@
     "minimum-stability": "dev",
     "replace": {
         "quasarstream/codecs": "self.version"
+    },
+    "suggest": {
+        "ext-ffi": "Install the FFI extension and libopus/libvpx/libavcodec to transcode media; not required to packetize already-encoded media"
     }
 }

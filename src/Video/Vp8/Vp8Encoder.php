@@ -42,12 +42,12 @@ class Vp8Encoder extends Encoder implements SharedLibraryInterface
     /**
      * @var int VIDEO_CLOCK_RATE Standard video clock rate (90kHz)
      */
-    private const int VIDEO_CLOCK_RATE = 90000;
+    private const VIDEO_CLOCK_RATE = 90000;
 
     /**
      * @var int MAX_FRAME_RATE Maximum supported frame rate (30fps)
      */
-    private const int MAX_FRAME_RATE = 30;
+    private const MAX_FRAME_RATE = 30;
 
     /**
      * Maximum RTP payload size.
@@ -55,7 +55,7 @@ class Vp8Encoder extends Encoder implements SharedLibraryInterface
      * Upstream reads this from the global PACKET_MAX constant, which is only defined as a side
      * effect of loading libvpx; packetizing an already-encoded frame must not require FFI.
      */
-    private const int PACKET_MAX = 1300;
+    private const PACKET_MAX = 1300;
 
     /**
      * @var int $pictureId Current picture identifier (15-bit)

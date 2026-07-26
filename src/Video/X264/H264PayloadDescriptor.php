@@ -29,22 +29,22 @@ class H264PayloadDescriptor implements PayloadDescriptorInterface
     /**
      * @var int NAL_HEADER_SIZE Size of NAL unit header (1 byte)
      */
-    private const int NAL_HEADER_SIZE = 1;
+    private const NAL_HEADER_SIZE = 1;
 
     /**
      * @var int NAL_TYPE_FU_A Fragmentation Unit type value (28)
      */
-    private const int NAL_TYPE_FU_A = 28;
+    private const NAL_TYPE_FU_A = 28;
 
     /**
      * @var int NAL_TYPE_STAP_A Aggregation Packet type value (24)
      */
-    private const int NAL_TYPE_STAP_A = 24;
+    private const NAL_TYPE_STAP_A = 24;
 
     /**
      * @var int LENGTH_FIELD_SIZE Size of length field in STAP-A (2 bytes)
      */
-    private const int LENGTH_FIELD_SIZE = 2;
+    private const LENGTH_FIELD_SIZE = 2;
 
     /**
      * Parses H.264 payload and reconstructs NAL units

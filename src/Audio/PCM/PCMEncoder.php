@@ -39,7 +39,7 @@ abstract class PCMEncoder extends Encoder implements EncoderInterface
     /**
      * @var int SAMPLE_RATE Input sample rate (8kHz)
      */
-    private const int SAMPLE_RATE = 8000;
+    private const SAMPLE_RATE = 8000;
 
     /**
      * @var TransCoder|null $transcoder Audio transcoder instance

@@ -39,12 +39,12 @@ class OpusEncoder extends BEncoder implements EncoderInterface
     /**
      * @var int SAMPLE_RATE Opus required sample rate (48kHz)
      */
-    private const int SAMPLE_RATE = 48000;
+    private const SAMPLE_RATE = 48000;
 
     /**
      * @var int SAMPLES_PER_FRAME Opus frame size (960 samples)
      */
-    private const int SAMPLES_PER_FRAME = 960;
+    private const SAMPLES_PER_FRAME = 960;
 
     /**
      * @var Encoder $encoder Opus encoder instance

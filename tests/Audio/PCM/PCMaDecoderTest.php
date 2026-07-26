@@ -45,6 +45,6 @@ class PCMaDecoderTest extends TestCase
         $this->assertEquals(0, $frame->getPts());
         $this->assertEquals(160, $frame->getSamples());
         $this->assertEquals(8000, $frame->getSampleRate());
-        $this->assertEquals(new Fraction(1, 8000)(), $frame->getTimeBase());
+        $this->assertEquals((new Fraction(1, 8000))(), $frame->getTimeBase());
     }
 }
