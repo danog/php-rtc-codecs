@@ -2,6 +2,7 @@
 
 namespace Tests\Webrtc\Codecs\Audio\Opus;
 
+use Webrtc\AVCodec\AVCodec;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
@@ -20,6 +21,12 @@ class OpusDecoderTest extends TestCase
 
     protected function setUp(): void
     {
+        if (!AVCodec::isAvailable()) {
+            self::markTestSkipped(
+                'Transcoding needs the FFI extension and an FFmpeg build matching the bundled headers.'
+            );
+        }
+
         parent::setUp();
         $this->codec = new RTCRtpCodecParameters(mimeType: 'audio/opus', clockRate: 48000, channels: 2, payloadType: 100);
     }

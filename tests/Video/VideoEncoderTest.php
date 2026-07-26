@@ -2,6 +2,7 @@
 
 namespace Tests\Webrtc\Codecs\Video;
 
+use Webrtc\AVCodec\AVCodec;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tests\Webrtc\Codecs\Fraction;
@@ -17,6 +18,17 @@ use Webrtc\Codecs\EncoderInterface;
 #[CoversClass(Encoder::class)]
 class VideoEncoderTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        if (!AVCodec::isAvailable()) {
+            self::markTestSkipped(
+                'Transcoding needs the FFI extension and an FFmpeg build matching the bundled headers.'
+            );
+        }
+    }
+
     protected function createPacket(string $payload, int $pts): Packet
     {
         $packet = new Packet();

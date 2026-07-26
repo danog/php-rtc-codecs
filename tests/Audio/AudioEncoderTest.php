@@ -2,6 +2,7 @@
 
 namespace Tests\Webrtc\Codecs\Audio;
 
+use Webrtc\AVCodec\AVCodec;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tests\Webrtc\Codecs\Fraction;
@@ -16,6 +17,17 @@ use Webrtc\Codecs\EncoderInterface;
 #[CoversClass(Encoder::class)]
 class AudioEncoderTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        if (!AVCodec::isAvailable()) {
+            self::markTestSkipped(
+                'Transcoding needs the FFI extension and an FFmpeg build matching the bundled headers.'
+            );
+        }
+    }
+
     const AUDIO_PTIME = 0.02; // 20ms
 
     protected function createPacket(string $payload, int $pts): Packet

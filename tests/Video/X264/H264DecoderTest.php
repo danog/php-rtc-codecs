@@ -2,6 +2,7 @@
 
 namespace Tests\Webrtc\Codecs\Video\X264;
 
+use Webrtc\AVCodec\AVCodec;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
@@ -14,6 +15,17 @@ use Webrtc\RTPParameter\RTCRtpCodecParameters;
 #[CoversClass(H264Decoder::class)]
 class H264DecoderTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        if (!AVCodec::isAvailable()) {
+            self::markTestSkipped(
+                'Transcoding needs the FFI extension and an FFmpeg build matching the bundled headers.'
+            );
+        }
+    }
+
 
     public function testDecoder()
     {
