@@ -43,6 +43,7 @@ class CodecTest extends TestCase
         $expectedVideoCodecs = [
             new RTCRtpCodecCapability('video/VP8', 90000),
             new RTCRtpCodecCapability('video/rtx', 90000),
+            new RTCRtpCodecCapability('video/VP9', 90000, null, ['profile-id' => '0']),
             new RTCRtpCodecCapability('video/H264', 90000, null, [
                 'level-asymmetry-allowed' => '1',
                 'packetization-mode' => '1',

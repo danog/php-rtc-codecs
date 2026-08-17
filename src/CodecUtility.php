@@ -47,4 +47,22 @@ class CodecUtility
     {
         return strtolower(explode("/", $codec->mimeType)[1]) === 'rtx';
     }
+
+    /**
+     * Gets the payload type an RTX codec retransmits, as declared by its `apt` parameter
+     *
+     * The value arrives as an int when the codec was built from the local capability list, and as
+     * a string when it was parsed out of an `a=fmtp` line, so it has to be normalised before it can
+     * be compared against a payload type. A codec with no usable `apt` yields null, which never
+     * matches a real payload type.
+     *
+     * @param RTCRtpCodecParameters|RTCRtpCodecCapability $codec Codec to read
+     * @return int|null The associated payload type, or null if the codec declares none
+     */
+    public static function apt(RTCRtpCodecParameters|RTCRtpCodecCapability $codec): ?int
+    {
+        $apt = $codec->parameters['apt'] ?? null;
+
+        return is_int($apt) || (is_string($apt) && ctype_digit($apt)) ? (int) $apt : null;
+    }
 }

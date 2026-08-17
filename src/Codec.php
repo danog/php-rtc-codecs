@@ -21,6 +21,9 @@ use Webrtc\Codecs\Audio\PCM\PCMuEncoder;
 use Webrtc\Codecs\Video\Vp8\Vp8Decoder;
 use Webrtc\Codecs\Video\Vp8\Vp8Encoder;
 use Webrtc\Codecs\Video\Vp8\Vp8PayloadDescriptor;
+use Webrtc\Codecs\Video\Vp9\Vp9Decoder;
+use Webrtc\Codecs\Video\Vp9\Vp9Encoder;
+use Webrtc\Codecs\Video\Vp9\Vp9PayloadDescriptor;
 use Webrtc\Codecs\Video\X264\H264Decoder;
 use Webrtc\Codecs\Video\X264\H264Encoder;
 use Webrtc\Codecs\Video\X264\H264PayloadDescriptor;
@@ -140,6 +143,8 @@ class Codec
     private function initCodecs(): void
     {
         $this->addVideoCodec('video/VP8');
+        // Profile 0 is the 8-bit 4:2:0 profile, the only one every VP9 decoder must support.
+        $this->addVideoCodec('video/VP9', ['profile-id' => '0']);
         foreach (['42001f', '42e01f'] as $profileLevelId) {
             $this->addVideoCodec('video/H264', [
                 'level-asymmetry-allowed' => '1',
@@ -207,6 +212,7 @@ class Codec
             'audio/pcmu' => new PCMuDecoder,
             'video/h264' => new H264Decoder,
             'video/vp8'  => new Vp8Decoder,
+            'video/vp9'  => new Vp9Decoder,
             default => throw new InvalidArgumentException("No decoder found for MIME type `$codec->mimeType`"),
         };
     }
@@ -226,6 +232,7 @@ class Codec
             'audio/pcmu' => new PCMuEncoder,
             'video/h264' => new H264Encoder,
             'video/vp8'  => new Vp8Encoder,
+            'video/vp9'  => new Vp9Encoder,
             default => throw new InvalidArgumentException("No encoder found for MIME type `$codec->mimeType`"),
         };
     }
@@ -242,6 +249,7 @@ class Codec
     {
         return match (strtolower($codec->mimeType)) {
             "video/vp8" => Vp8PayloadDescriptor::decode($payload),
+            "video/vp9" => Vp9PayloadDescriptor::decode($payload),
             "video/h264" => H264PayloadDescriptor::decode($payload),
             default => [true, $payload],
         };
