@@ -1,7 +1,7 @@
 {
     "name": "danog/php-rtc-codecs",
     "type": "library",
-    "description": "A comprehensive codec implementation package for WebRTC applications, providing audio/video encoding and decoding capabilities. Fork with FFI made optional and a pure-PHP DTLS/SRTP stack, maintained for MadelineProto.",
+    "description": "WebRTC audio/video codec and RTP packetization utilities. MadelineProto's PHP 8.2+ fork adds optional transcoding FFI, VP9 packetization, and the modular danog/php-rtc stack.",
     "keywords": [
         "webrtc",
         "codecs",

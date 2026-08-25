@@ -1,9 +1,15 @@
 # WebRTC Codec Package
 
-![PHP Version](https://img.shields.io/badge/PHP-8.4%2B-blue)
+![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-blue)
 ![License](https://img.shields.io/badge/License-BSD-blue)
 
 A comprehensive codec implementation package for WebRTC applications, providing audio/video encoding and decoding capabilities.
+
+## About this fork
+
+This is the `danog/php-rtc-codecs` fork used by MadelineProto. It targets PHP 8.2+, can packetize already-encoded media without FFI, and adds VP9 RTP payload parsing and packetization alongside the existing Opus, VP8, and H.264 support.
+
+The forked stack keeps the upstream `quasarstream/*` dependency constraints for compatibility. Each `danog/php-rtc-*` package replaces its upstream counterpart, so consumers select the complete maintained stack by requiring the corresponding danog packages together.
 
 ## Features
 
@@ -27,7 +33,8 @@ A comprehensive codec implementation package for WebRTC applications, providing 
 
 ## Requirements
 
-- **PHP ≥ 8.4** with FFI extension enabled
+- **PHP ≥ 8.2**
+- FFI and matching native codec libraries only when encoding, decoding, or transcoding media
 - Linux (Windows and macOS support planned for future releases)
 - FFmpeg/libav shared libraries (libavcodec, libavfilter, etc.)
     - Compatible with FFmpeg **version 7.1.1**
