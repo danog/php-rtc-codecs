@@ -29,11 +29,11 @@
     ],
     "require": {
         "php": "^8.2",
-        "quasarstream/exception": "^1.0",
-        "quasarstream/vpx": "^1.0",
-        "quasarstream/opus": "^1.0",
-        "quasarstream/av": "^1.0",
-        "quasarstream/rtp-parameter": "^1.0"
+        "danog/php-rtc-exception": "^1.0",
+        "danog/php-rtc-vpx": "^1.0",
+        "danog/php-rtc-opus": "^1.0",
+        "danog/php-rtc-av": "^1.0",
+        "danog/php-rtc-rtp-parameter": "^1.0"
     },
     "require-dev": {
         "phpunit/php-code-coverage": "11.0.x-dev",
@@ -61,9 +61,6 @@
         ]
     },
     "minimum-stability": "dev",
-    "replace": {
-        "quasarstream/codecs": "self.version"
-    },
     "suggest": {
         "ext-ffi": "Install the FFI extension and libopus/libvpx/libavcodec to transcode media; not required to packetize already-encoded media"
     }
