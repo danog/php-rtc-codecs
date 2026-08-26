@@ -33,7 +33,7 @@
     "require": {
         "php": "^8.2",
         "danog/php-rtc-exception": "^1.0",
-        "danog/php-rtc-vpx": "^1.0",
+        "danog/php-rtc-vpx": "^1.1",
         "danog/php-rtc-opus": "^1.0",
         "danog/php-rtc-av": "^1.0",
         "danog/php-rtc-rtp-parameter": "^1.0"
