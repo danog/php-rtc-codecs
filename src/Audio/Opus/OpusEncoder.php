@@ -14,23 +14,24 @@ namespace Webrtc\Codecs\Audio\Opus;
 use Webrtc\AVCodec\Audio\AudioResampler;
 use Webrtc\AVCodec\AVCodec;
 use Webrtc\AVCodec\AVFilter;
+use Webrtc\AVCodec\Codec;
+use Webrtc\AVCodec\Context\AudioContext;
 use Webrtc\AVCodec\Data\Packet;
 use Webrtc\Codecs\EncodedPacket;
 use Webrtc\AVCodec\Exception\AvCodecException;
 use Webrtc\AVCodec\Frame\AudioFrame;
 use Webrtc\AVCodec\Frame\FrameInterface;
+use Webrtc\AVCodec\TransCoder;
 use Webrtc\Codecs\Encoder as BEncoder;
 use Webrtc\Codecs\EncoderInterface;
 use Webrtc\Exception\RuntimeException;
-use Webrtc\Opus\Encoder;
-use Webrtc\Opus\Exception\OpusException;
-use Webrtc\Opus\Opus;
 
 /**
  * Opus Audio Encoder Class
  *
- * Provides encoding of audio frames to Opus format, including resampling
- * to Opus-compatible parameters (48 kHz, stereo/mono).
+ * Provides encoding of audio frames to Opus format, backed by FFmpeg's libopus
+ * encoder (via danog/php-rtc-av). Input frames are resampled to Opus-compatible
+ * parameters (48 kHz, stereo, 960 samples per frame) before encoding.
  *
  * @package Webrtc\Codecs\Audio\Opus
  */
@@ -47,9 +48,9 @@ class OpusEncoder extends BEncoder implements EncoderInterface
     private const SAMPLES_PER_FRAME = 960;
 
     /**
-     * @var Encoder $encoder Opus encoder instance
+     * @var TransCoder $transcoder Opus encoder transcoder instance
      */
-    private Encoder $encoder;
+    private TransCoder $transcoder;
 
     /**
      * @var AudioResampler $resampler Audio resampler instance
@@ -59,32 +60,32 @@ class OpusEncoder extends BEncoder implements EncoderInterface
     /**
      * Constructor
      *
-     * Initializes Opus, AVCodec, and AVFilter libraries
-     * Create encoder and resampler instances
-     * @throws OpusException
-     * @throws AvCodecException
+     * The native libraries are only loaded on the first actual encode: packing an
+     * already-encoded OPUS frame for RTP needs no codec at all, so FFI stays optional.
      */
     public function __construct()
     {
-        // The native libraries are only loaded on the first actual encode: packing an
-        // already-encoded OPUS frame for RTP needs no codec at all, so FFI stays optional.
     }
 
     /**
-     * Load libopus/libav on demand.
+     * Load libav/libopus on demand.
      *
-     * @throws OpusException
      * @throws AvCodecException
      */
     private function ensureEncoder(): void
     {
-        if (isset($this->encoder)) {
+        if (isset($this->transcoder)) {
             return;
         }
-        Opus::init();
         AVCodec::init();
         AVFilter::init();
-        $this->encoder = new Encoder();
+
+        $context = AudioContext::create(new Codec("libopus", "w"));
+        $context->setFormat("s16");
+        $context->setLayout("stereo");
+        $context->setSampleRate(self::SAMPLE_RATE);
+
+        $this->transcoder = new TransCoder($context);
         $this->resampler = new AudioResampler("s16", "stereo", self::SAMPLE_RATE, self::SAMPLES_PER_FRAME);
     }
 
@@ -96,7 +97,6 @@ class OpusEncoder extends BEncoder implements EncoderInterface
      * @return array|string [packets, pts] Array of encoded packets and presentation timestamp
      * @throws RuntimeException If frame validation fails
      * @throws AvCodecException
-     * @throws OpusException
      */
     public function encode(FrameInterface|AudioFrame $frame, bool $useKeyframe = false): string|array
     {
@@ -106,8 +106,9 @@ class OpusEncoder extends BEncoder implements EncoderInterface
 
         $packets = [];
         foreach ($frames as $frame) {
-            $data = $frame->getPlanes()[0]->getData();
-            $packets [] = $this->encoder->encode($data);
+            foreach ($this->transcoder->encode($frame) as $packet) {
+                $packets[] = $packet->getData();
+            }
         }
 
         return [$packets, $frame->getPts()];

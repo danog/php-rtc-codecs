@@ -3,19 +3,10 @@
 namespace Tests\Webrtc\Codecs\Video\X264;
 
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
-use Webrtc\AVCodec\Context\Context;
-use Webrtc\AVCodec\Context\Dictionary;
-use Webrtc\AVCodec\Frame\Frame;
-use Webrtc\AVCodec\Frame\VideoFrame;
 use Webrtc\Codecs\Video\X264\H264PayloadDescriptor;
 use PHPUnit\Framework\TestCase;
 use Webrtc\Exception\InvalidArgumentException;
 
-#[UsesClass(Context::class)]
-#[UsesClass(Dictionary::class)]
-#[UsesClass(Frame::class)]
-#[UsesClass(VideoFrame::class)]
 #[CoversClass(H264PayloadDescriptor::class)]
 class H264PayloadDescriptorTest extends TestCase
 {

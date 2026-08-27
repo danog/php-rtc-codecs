@@ -11,89 +11,61 @@
 
 namespace Webrtc\Codecs\Video\Vp8;
 
-use FFI\CData;
+use Throwable;
 use Webrtc\AVCodec\AVCodec;
+use Webrtc\AVCodec\Codec;
+use Webrtc\AVCodec\Context\VideoContext;
+use Webrtc\AVCodec\Data\Packet;
 use Webrtc\AVCodec\Exception\AvCodecException;
-use Webrtc\AVCodec\Frame\VideoFrame;
+use Webrtc\AVCodec\TransCoder;
 use Webrtc\Codecs\DecoderInterface;
 use Webrtc\Codecs\JitterFrameInterface;
-use Webrtc\VPX\Context;
-use Webrtc\VPX\Decoder;
-use Webrtc\VPX\Enum\BriefInterface;
-use Webrtc\VPX\Exception\VpxException;
-use Webrtc\VPX\Vpx;
 
 /**
  * VP8 Video Decoder Class
  *
- * Implements real-time decoding of VP8-encoded video frames using libvpx.
- * Provides efficient frame-by-frame decoding suitable for WebRTC applications.
+ * Implements real-time decoding of VP8-encoded video frames using FFmpeg's VP8
+ * decoder (via danog/php-rtc-av). Provides efficient frame-by-frame decoding
+ * suitable for WebRTC applications.
  *
  * @package Webrtc\Codecs\Video\Vp8
  */
 class Vp8Decoder implements DecoderInterface
 {
     /**
-     * @var Decoder $decoder VPX decoder instance
+     * @var TransCoder $transcoder VP8 transcoder instance
      */
-    private Decoder $decoder;
+    private TransCoder $transcoder;
 
     /**
      * Constructor
      *
-     * Initializes required libraries:
-     * - libvpx (VP8/VP9 codec library)
-     * - AVCodec (FFmpeg codec infrastructure)
-     * Creates a new VP8 decoder instance with default configuration
+     * Initializes the AVCodec library and a VP8 codec context in read mode.
      * @throws AvCodecException
-     * @throws VpxException
      */
     public function __construct()
     {
-        Vpx::init();
         AVCodec::init();
-        $this->decoder = new Decoder(new Context, BriefInterface::VP8Decoder);
+        $this->transcoder = new TransCoder(VideoContext::create(new Codec("vp8")));
     }
 
     /**
      * Decodes a VP8-encoded video frame
      *
      * @param JitterFrameInterface $frame Input frame containing VP8 payload and timestamp
-     * @return VideoFrame[] Array of decoded video frames
-     * @throws VpxException
-     * @throws AvCodecException
+     * @return array Array of decoded VideoFrame objects, empty on decoding failure
      */
     public function decode(JitterFrameInterface $frame): array
     {
-        $frames = [];
-        $images = $this->decoder->decode($frame->getData());
+        try {
+            $packet = new Packet();
+            $packet->putData($frame->getData());
+            $packet->setPts($frame->getTimestamp());
+            $packet->setTimeBase(1, 90000);
 
-        foreach ($images as $image) {
-            $frames [] = $this->generateFrame($image, $frame);
+            return $this->transcoder->decode($packet);
+        } catch (Throwable) {
+            return [];
         }
-
-        return $frames;
-    }
-
-    /**
-     * Creates a VideoFrame from decoded image data
-     *
-     * @param CData $image Decoded image data from libvpx
-     * @param JitterFrameInterface $frame Source frame with timestamp
-     * @return VideoFrame Configured video frame object
-     * @throws AvCodecException
-     */
-    private function generateFrame(CData $image, JitterFrameInterface $frame): VideoFrame
-    {
-        $videoFrame = new VideoFrame($image->d_w, $image->d_h);
-        $videoFrame->setPts($frame->getTimestamp());
-        $videoFrame->setTimeBase(1, 90000);
-
-        for ($p = 0; $p < 3; $p++) {
-            $videoFrame->getFrame()->data[$p] = $image->planes[$p];
-            $videoFrame->getFrame()->linesize[$p] = $image->stride[$p];
-        }
-
-        return $videoFrame;
     }
 }
