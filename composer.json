@@ -39,7 +39,7 @@
         "danog/php-rtc-rtp-parameter": "^1.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^11.3"
+        "phpunit/phpunit": "^13.0"
     },
     "autoload": {
         "psr-4": {
@@ -62,7 +62,7 @@
             "php -r \"if (stripos(PHP_OS_FAMILY, 'Linux') === false) { fwrite(STDERR, 'This package only supports Linux.' . PHP_EOL); exit(1); }\""
         ]
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "suggest": {
         "ext-ffi": "Install the FFI extension and libopus/libvpx/libavcodec to transcode media; not required to packetize already-encoded media"
     }
