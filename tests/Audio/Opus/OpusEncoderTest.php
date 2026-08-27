@@ -10,8 +10,28 @@ use Webrtc\Codecs\Audio\Opus\OpusEncoder;
 use Webrtc\Codecs\Codec;
 use Webrtc\RTPParameter\RTCRtpCodecParameters;
 
+#[UsesClass(\Webrtc\AVCodec\AVCodec::class)]
+#[UsesClass(\Webrtc\AVCodec\AVFilter::class)]
+#[UsesClass(\Webrtc\AVCodec\AVFormat::class)]
+#[UsesClass(\Webrtc\AVCodec\Audio\AudioLayout::class)]
+#[UsesClass(\Webrtc\AVCodec\Audio\AudioResampler::class)]
+#[UsesClass(\Webrtc\AVCodec\Codec::class)]
+#[UsesClass(\Webrtc\AVCodec\Context\AudioContext::class)]
+#[UsesClass(\Webrtc\AVCodec\Context\Context::class)]
+#[UsesClass(\Webrtc\AVCodec\Context\Dictionary::class)]
+#[UsesClass(\Webrtc\AVCodec\Data\AudioPlane::class)]
+#[UsesClass(\Webrtc\AVCodec\Data\Buffer::class)]
+#[UsesClass(\Webrtc\AVCodec\Data\Packet::class)]
+#[UsesClass(\Webrtc\AVCodec\Filter\Filter::class)]
+#[UsesClass(\Webrtc\AVCodec\Filter\FilterContext::class)]
+#[UsesClass(\Webrtc\AVCodec\Filter\Graph::class)]
+#[UsesClass(\Webrtc\AVCodec\Format\AudioFormat::class)]
+#[UsesClass(\Webrtc\AVCodec\Frame\AudioFrame::class)]
+#[UsesClass(\Webrtc\AVCodec\Frame\Frame::class)]
+#[UsesClass(\Webrtc\AVCodec\TransCoder::class)]
 #[UsesClass(Codec::class)]
 #[UsesClass(OpusDecoder::class)]
+#[UsesClass(\Webrtc\RTPParameter\RTCRtpCodecParameters::class)]
 #[CoversClass(OpusEncoder::class)]
 class OpusEncoderTest extends AudioEncoderTest
 {

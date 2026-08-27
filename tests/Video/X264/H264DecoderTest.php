@@ -11,7 +11,18 @@ use Webrtc\Codecs\Codec;
 use Webrtc\Codecs\Video\X264\H264Decoder;
 use Webrtc\RTPParameter\RTCRtpCodecParameters;
 
+#[UsesClass(\Webrtc\AVCodec\AVCodec::class)]
+#[UsesClass(\Webrtc\AVCodec\AVFilter::class)]
+#[UsesClass(\Webrtc\AVCodec\AVFormat::class)]
+#[UsesClass(\Webrtc\AVCodec\Codec::class)]
+#[UsesClass(\Webrtc\AVCodec\Context\Context::class)]
+#[UsesClass(\Webrtc\AVCodec\Context\Dictionary::class)]
+#[UsesClass(\Webrtc\AVCodec\Context\VideoContext::class)]
+#[UsesClass(\Webrtc\AVCodec\Data\Buffer::class)]
+#[UsesClass(\Webrtc\AVCodec\Data\Packet::class)]
+#[UsesClass(\Webrtc\AVCodec\TransCoder::class)]
 #[UsesClass(Codec::class)]
+#[UsesClass(\Webrtc\RTPParameter\RTCRtpCodecParameters::class)]
 #[CoversClass(H264Decoder::class)]
 class H264DecoderTest extends TestCase
 {

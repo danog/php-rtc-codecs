@@ -12,10 +12,28 @@ use Webrtc\Codecs\Video\Vp8\Vp8Encoder;
 use Webrtc\Codecs\Video\Vp8\Vp8PayloadDescriptor;
 use Webrtc\RTPParameter\RTCRtpCodecParameters;
 
+#[UsesClass(\Webrtc\AVCodec\AVCodec::class)]
+#[UsesClass(\Webrtc\AVCodec\AVFilter::class)]
+#[UsesClass(\Webrtc\AVCodec\AVFormat::class)]
+#[UsesClass(\Webrtc\AVCodec\Codec::class)]
+#[UsesClass(\Webrtc\AVCodec\Context\Context::class)]
+#[UsesClass(\Webrtc\AVCodec\Context\Dictionary::class)]
+#[UsesClass(\Webrtc\AVCodec\Context\VideoContext::class)]
+#[UsesClass(\Webrtc\AVCodec\Data\Buffer::class)]
+#[UsesClass(\Webrtc\AVCodec\Data\Packet::class)]
+#[UsesClass(\Webrtc\AVCodec\Data\VideoPlane::class)]
+#[UsesClass(\Webrtc\AVCodec\Format\VideoFormat::class)]
+#[UsesClass(\Webrtc\AVCodec\Format\VideoFormatComponent::class)]
+#[UsesClass(\Webrtc\AVCodec\Frame\Frame::class)]
+#[UsesClass(\Webrtc\AVCodec\Frame\VideoFrame::class)]
+#[UsesClass(\Webrtc\AVCodec\Frame\VideoFrameReformater::class)]
+#[UsesClass(\Webrtc\AVCodec\SWScale::class)]
+#[UsesClass(\Webrtc\AVCodec\TransCoder::class)]
 #[UsesClass(Codec::class)]
 #[UsesClass(CodecUtility::class)]
 #[UsesClass(Vp8Decoder::class)]
 #[UsesClass(Vp8PayloadDescriptor::class)]
+#[UsesClass(\Webrtc\RTPParameter\RTCRtpCodecParameters::class)]
 #[CoversClass(Vp8Encoder::class)]
 class Vp8EncoderTest extends VideoEncoderTest
 {

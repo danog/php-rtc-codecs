@@ -15,6 +15,7 @@ use Webrtc\RTPParameter\RTCRtpCodecParameters;
 #[UsesClass(Codec::class)]
 #[UsesClass(Vp9PayloadDescriptor::class)]
 #[UsesClass(EncodedPacket::class)]
+#[UsesClass(\Webrtc\RTPParameter\RTCRtpCodecParameters::class)]
 #[CoversClass(Vp9Encoder::class)]
 class Vp9EncoderTest extends TestCase
 {

@@ -89,6 +89,10 @@ abstract class PCMEncoder extends Encoder implements EncoderInterface
      */
     public function pack(Packet|EncodedPacket $packet): string|array
     {
+        if ($packet instanceof EncodedPacket) {
+            // Already timed in the 8kHz PCM RTP clock: pass it straight through, no codec needed.
+            return [[$packet->getData()], $packet->getTimestamp()];
+        }
         return [[$packet->getData()], $this->convertTimebase($packet->getPts(), (array)$packet->getTimeBase(), [1, 8000])];
     }
 

@@ -3,11 +3,14 @@
 namespace Tests\Webrtc\Codecs;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Webrtc\Codecs\CodecUtility;
 use Webrtc\RTPParameter\RTCRtpCodecCapability;
 use Webrtc\RTPParameter\RTCRtpCodecParameters;
 
+#[UsesClass(\Webrtc\RTPParameter\RTCRtpCodecCapability::class)]
+#[UsesClass(\Webrtc\RTPParameter\RTCRtpCodecParameters::class)]
 #[CoversClass(CodecUtility::class)]
 class CodecUtilityTest extends TestCase
 {

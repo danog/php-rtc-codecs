@@ -11,9 +11,25 @@ use Webrtc\Codecs\Video\X264\H264Encoder;
 use Webrtc\Codecs\Video\X264\H264PayloadDescriptor;
 use Webrtc\RTPParameter\RTCRtpCodecParameters;
 
+#[UsesClass(\Webrtc\AVCodec\AVCodec::class)]
+#[UsesClass(\Webrtc\AVCodec\AVFilter::class)]
+#[UsesClass(\Webrtc\AVCodec\AVFormat::class)]
+#[UsesClass(\Webrtc\AVCodec\Codec::class)]
+#[UsesClass(\Webrtc\AVCodec\Context\Context::class)]
+#[UsesClass(\Webrtc\AVCodec\Context\Dictionary::class)]
+#[UsesClass(\Webrtc\AVCodec\Context\VideoContext::class)]
+#[UsesClass(\Webrtc\AVCodec\Data\Buffer::class)]
+#[UsesClass(\Webrtc\AVCodec\Data\Packet::class)]
+#[UsesClass(\Webrtc\AVCodec\Data\VideoPlane::class)]
+#[UsesClass(\Webrtc\AVCodec\Format\VideoFormat::class)]
+#[UsesClass(\Webrtc\AVCodec\Format\VideoFormatComponent::class)]
+#[UsesClass(\Webrtc\AVCodec\Frame\Frame::class)]
+#[UsesClass(\Webrtc\AVCodec\Frame\VideoFrame::class)]
+#[UsesClass(\Webrtc\AVCodec\TransCoder::class)]
 #[UsesClass(Codec::class)]
 #[UsesClass(H264Decoder::class)]
 #[UsesClass(H264PayloadDescriptor::class)]
+#[UsesClass(\Webrtc\RTPParameter\RTCRtpCodecParameters::class)]
 #[CoversClass(H264Encoder::class)]
 class H264EncoderTest extends VideoEncoderTest
 {
