@@ -13,6 +13,7 @@ jobs:
   test:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         php: ["8.2", "8.3", "8.4", "8.5"]
@@ -43,7 +44,18 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
-      - name: Install FFmpeg 7.1.1 with libx264, libopus, libvpx 1.15.0
+      - name: Cache FFmpeg 9.0.1 build
+        id: ffmpeg-cache
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.tool_cache }}/ffmpeg-9.0.1
+          key: ffmpeg-9.0.1-ubuntu
+
+      - name: Install build deps and libvpx 1.15.0
+        # codecs depends on av, which requires the FFI extension and an FFmpeg build
+        # matching the bundled headers (lib major version 9). libvpx is built always so
+        # the cached FFmpeg libraries can find it at runtime.
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
@@ -52,17 +64,6 @@ jobs:
             yasm nasm wget unzip libssl-dev \
             libx264-dev libopus-dev
 
-          # Install FFmpeg 7.1.1
-          wget https://ffmpeg.org/releases/ffmpeg-7.1.1.tar.bz2
-          tar xjf ffmpeg-7.1.1.tar.bz2
-          cd ffmpeg-7.1.1
-          ./configure --enable-shared --enable-gpl --enable-libx264 --enable-libopus
-          make -j$(nproc)
-          sudo make install
-          sudo ldconfig
-          cd ..
-
-          # Build and install libvpx
           mkdir -p ~/vpx_sources
           cd ~/vpx_sources
           curl -LO https://github.com/webmproject/libvpx/archive/refs/tags/v1.15.0.tar.gz
@@ -76,12 +77,30 @@ jobs:
 
           pkg-config --modversion vpx || echo "libvpx not found"
 
+      - name: Build FFmpeg 9.0.1 with libx264, libopus, libvpx 1.15.0
+        if: matrix.os == 'ubuntu-latest' && steps.ffmpeg-cache.outputs.cache-hit != 'true'
+        run: |
+          wget https://ffmpeg.org/releases/ffmpeg-9.0.1.tar.xz
+          tar xJf ffmpeg-9.0.1.tar.xz
+          cd ffmpeg-9.0.1
+          ./configure --prefix="$RUNNER_TOOL_CACHE/ffmpeg-9.0.1" \
+            --enable-shared --enable-gpl --enable-libx264 --enable-libopus --enable-libvpx
+          make -j$(nproc)
+          make install
+
       - name: Run Psalm
         run: vendor/bin/psalm --no-progress
 
       - name: Run PHPUnit tests
         run: |
           if [ "$RUNNER_OS" = "Linux" ]; then
+            # Point the AVCodec bindings at the cached FFmpeg 9 build; the default scan
+            # would pick the distro's FFmpeg 6 from /usr/lib instead.
+            FFMPEG_PREFIX="$RUNNER_TOOL_CACHE/ffmpeg-9.0.1"
+            export LD_LIBRARY_PATH="$FFMPEG_PREFIX/lib:$LD_LIBRARY_PATH"
+            export LIB_AVCODEC_PATH="$FFMPEG_PREFIX/lib/libavcodec.so"
+            export LIB_AVFORMAT_PATH="$FFMPEG_PREFIX/lib/libavformat.so"
+            export LIB_AVFILTER_PATH="$FFMPEG_PREFIX/lib/libavfilter.so"
             vendor/bin/phpunit
           else
             vendor/bin/phpunit -c phpunit-skiptolerant.xml
