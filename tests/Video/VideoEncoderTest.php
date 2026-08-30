@@ -16,9 +16,6 @@ use Webrtc\Codecs\DecoderInterface;
 use Webrtc\Codecs\Encoder;
 use Webrtc\Codecs\EncoderInterface;
 
-#[UsesClass(\Webrtc\AVCodec\AVCodec::class)]
-#[UsesClass(\Webrtc\AVCodec\AVFilter::class)]
-#[UsesClass(\Webrtc\AVCodec\AVFormat::class)]
 #[CoversClass(Encoder::class)]
 class VideoEncoderTest extends TestCase
 {

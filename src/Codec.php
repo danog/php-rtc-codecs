@@ -270,10 +270,20 @@ foreach ($this->headerExtensions[$kind] as $extension) {
      * Gets registered header extensions
      *
      * @param string|null $kind Optional media type filter
-     * @return array Header extensions array
+     * @return RTCRtpHeaderExtensionParameters[] Header extensions array
      */
     public function getHeaderExtensions(?string $kind = null): array
     {
-        return $kind !== null ? $this->headerExtensions[$kind] : $this->headerExtensions;
+        if ($kind !== null) {
+            return $this->headerExtensions[$kind];
+        }
+
+        $headerExtensions = [];
+        foreach ($this->headerExtensions as $extensions) {
+            foreach ($extensions as $extension) {
+                $headerExtensions[] = $extension;
+            }
+        }
+        return $headerExtensions;
     }
 }

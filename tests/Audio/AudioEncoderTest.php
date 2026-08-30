@@ -15,10 +15,6 @@ use Webrtc\Codecs\DecoderInterface;
 use Webrtc\Codecs\Encoder;
 use Webrtc\Codecs\EncoderInterface;
 
-#[UsesClass(\Webrtc\AVCodec\AVCodec::class)]
-#[UsesClass(\Webrtc\AVCodec\AVFilter::class)]
-#[UsesClass(\Webrtc\AVCodec\AVFormat::class)]
-#[UsesClass(\Webrtc\AVCodec\LibraryVersion::class)]
 #[CoversClass(Encoder::class)]
 class AudioEncoderTest extends TestCase
 {

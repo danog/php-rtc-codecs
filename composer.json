@@ -50,20 +50,17 @@
             "Tests\\Webrtc\\Codecs\\": "tests"
         }
     },
-    "scripts": {
-        "pre-install-cmd": [
-            "@check-linux"
-        ],
-        "pre-update-cmd": [
-            "@check-linux"
-        ],
-        "check-linux": [
-            "php -r \"if (stripos(PHP_OS_FAMILY, 'Linux') === false) { fwrite(STDERR, 'This package only supports Linux.' . PHP_EOL); exit(1); }\""
-        ]
-    },
     "minimum-stability": "stable",
     "suggest": {
         "ext-ffi": "Install the FFI extension and libopus/libvpx/libavcodec to transcode media; not required to packetize already-encoded media"
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "@composer bin all install --ansi"
+        ],
+        "post-update-cmd": [
+            "@composer bin all update --ansi"
+        ]
     },
     "config": {
         "allow-plugins": {

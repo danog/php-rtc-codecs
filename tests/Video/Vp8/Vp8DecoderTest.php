@@ -10,15 +10,7 @@ use Webrtc\Codecs\Codec;
 use Webrtc\Codecs\Video\Vp8\Vp8Decoder;
 use Webrtc\RTPParameter\RTCRtpCodecParameters;
 
-#[UsesClass(\Webrtc\AVCodec\AVCodec::class)]
-#[UsesClass(\Webrtc\AVCodec\AVFilter::class)]
-#[UsesClass(\Webrtc\AVCodec\AVFormat::class)]
-#[UsesClass(\Webrtc\AVCodec\Codec::class)]
-#[UsesClass(\Webrtc\AVCodec\Context\Context::class)]
-#[UsesClass(\Webrtc\AVCodec\Context\VideoContext::class)]
-#[UsesClass(\Webrtc\AVCodec\TransCoder::class)]
 #[UsesClass(Codec::class)]
-#[UsesClass(\Webrtc\RTPParameter\RTCRtpCodecParameters::class)]
 #[CoversClass(Vp8Decoder::class)]
 class Vp8DecoderTest extends TestCase
 {

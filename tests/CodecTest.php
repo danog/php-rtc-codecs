@@ -13,12 +13,6 @@ use Webrtc\RTPParameter\RTCRtpCodecCapability;
 use Webrtc\RTPParameter\RTCRtpCodecParameters;
 use Webrtc\RTPParameter\RTCRtpHeaderExtensionCapability;
 
-#[UsesClass(\Webrtc\RTPParameter\RTCRtcpFeedback::class)]
-#[UsesClass(\Webrtc\RTPParameter\RTCRtpCapabilities::class)]
-#[UsesClass(\Webrtc\RTPParameter\RTCRtpCodecCapability::class)]
-#[UsesClass(\Webrtc\RTPParameter\RTCRtpCodecParameters::class)]
-#[UsesClass(\Webrtc\RTPParameter\RTCRtpHeaderExtensionCapability::class)]
-#[UsesClass(\Webrtc\RTPParameter\RTCRtpHeaderExtensionParameters::class)]
 #[UsesClass(CodecUtility::class)]
 #[CoversClass(Codec::class)]
 class CodecTest extends TestCase
