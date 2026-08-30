@@ -22,7 +22,7 @@ use Webrtc\Exception\InvalidArgumentException;
  *
  * @package Webrtc\Codecs\Video\Vp8
  */
-class Vp8PayloadDescriptor implements PayloadDescriptorInterface
+final class Vp8PayloadDescriptor implements PayloadDescriptorInterface
 {
     /**
      * @var int $partitionStart Indicates start of partition (1-bit)
@@ -45,7 +45,7 @@ class Vp8PayloadDescriptor implements PayloadDescriptorInterface
     private ?int $tl0picidx;
 
     /**
-     * @var array|null $tid Temporal layer indices [Y, K] (2-bit + 1-bit)
+     * @var array{0: int, 1: int}|null $tid Temporal layer indices [Y, K] (2-bit + 1-bit)
      */
     private ?array $tid;
 
@@ -61,7 +61,7 @@ class Vp8PayloadDescriptor implements PayloadDescriptorInterface
      * @param int $partitionId Partition identifier
      * @param int|null $pictureId Optional picture ID
      * @param int|null $tl0picidx Optional TL0PICIDX
-     * @param array|null $tid Optional temporal layer info
+     * @param array{0: int, 1: int}|null $tid Optional temporal layer info
      * @param int|null $keyidx Optional keyframe index
      */
     public function __construct(
@@ -124,7 +124,7 @@ class Vp8PayloadDescriptor implements PayloadDescriptorInterface
     /**
      * Gets temporal layer info
      *
-     * @return array|null [Y, K] indices or null
+     * @return array{0: int, 1: int}|null [Y, K] indices or null
      */
     public function getTid(): ?array
     {
@@ -146,6 +146,7 @@ class Vp8PayloadDescriptor implements PayloadDescriptorInterface
      *
      * @return string Binary payload descriptor
      */
+    #[\Override]
     public function encode(): string
     {
         $data = $this->encodeHeader();
@@ -235,6 +236,7 @@ class Vp8PayloadDescriptor implements PayloadDescriptorInterface
      * @return array [Vp8PayloadDescriptor, remaining_data]
      * @throws InvalidArgumentException On malformed input
      */
+    #[\Override]
     public static function decode(string $data): array
     {
         if (strlen($data) < 1) {
@@ -247,7 +249,7 @@ class Vp8PayloadDescriptor implements PayloadDescriptorInterface
         $partitionStart = ($octet >> 4) & 1;
         $partitionId = $octet & 0xF;
 
-        list($pictureId, $tl0picidx, $tid, $keyidx, $pos) = self::decodeExtendedFields($data, $pos, $extended);
+        list($pictureId, $tl0picidx, $tid, $keyidx, $pos) = self::decodeExtendedFields($data, $pos, (bool)$extended);
 
         return [new self($partitionStart, $partitionId, $pictureId, $tl0picidx, $tid, $keyidx), substr($data, $pos)];
     }
@@ -256,7 +258,7 @@ class Vp8PayloadDescriptor implements PayloadDescriptorInterface
      * @param string $data
      * @param int $pos
      * @param bool $extended
-     * @return array
+     * @return array{0: int|null, 1: int|null, 2: array{0: int, 1: int}|null, 3: int|null, 4: int}
      */
     private static function decodeExtendedFields(string $data, int $pos, bool $extended): array
     {
@@ -282,7 +284,7 @@ class Vp8PayloadDescriptor implements PayloadDescriptorInterface
     /**
      * @param string $data
      * @param int $pos
-     * @return int[]
+     * @return array{0: int, 1: int, 2: int, 3: int, 4: int}
      */
     private static function decodeExtensionOctet(string $data, int $pos): array
     {
@@ -301,7 +303,7 @@ class Vp8PayloadDescriptor implements PayloadDescriptorInterface
     /**
      * @param string $data
      * @param int $pos
-     * @return array
+     * @return array{0: int, 1: int}
      */
     private static function decodePictureId(string $data, int $pos): array
     {
@@ -312,7 +314,9 @@ class Vp8PayloadDescriptor implements PayloadDescriptorInterface
             if (strlen($data) < $pos + 2) {
                 throw new InvalidArgumentException("VPX descriptor has truncated long PictureID");
             }
-            $pictureId = unpack('n', substr($data, $pos, 2))[1] & 0x7FFF;
+            $decoded = unpack('n', substr($data, $pos, 2));
+            \assert($decoded !== false);
+            $pictureId = (int)$decoded[1] & 0x7FFF;
             $pos += 2;
         } else {
             $pictureId = ord($data[$pos++]);
@@ -326,7 +330,7 @@ class Vp8PayloadDescriptor implements PayloadDescriptorInterface
      * @param int $pos
      * @param int $extT
      * @param int $extK
-     * @return array
+     * @return array{0: array{0: int, 1: int}|null, 1: int|null}
      */
     private static function decodeTidKeyidx(string $data, int $pos, int $extT, int $extK): array
     {

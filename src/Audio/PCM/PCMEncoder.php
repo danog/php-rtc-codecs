@@ -58,6 +58,7 @@ abstract class PCMEncoder extends Encoder implements EncoderInterface
         AVFilter::init();
 
         $audioContext = AudioContext::create(new Codec($codecName, "w"));
+        \assert($audioContext instanceof AudioContext);
         $audioContext->setFormat("s16");
         $audioContext->setLayout("mono");
         $audioContext->setSampleRate(self::SAMPLE_RATE);
@@ -73,27 +74,31 @@ abstract class PCMEncoder extends Encoder implements EncoderInterface
      * @return array|string [packets, pts] Array of encoded packets and presentation timestamp
      * @throws RuntimeException If frame validation fails
      */
+    #[\Override]
     public function encode(FrameInterface $frame, bool $useKeyframe = false): string|array
     {
         $this->validateFrame($frame);
+        \assert($this->transcoder instanceof TransCoder);
+        /** @var Packet[] $packets */
         $packets = $this->transcoder->encode($frame);
 
-        return [array_map(fn($pkt) => $pkt->getData(), $packets), $packets[0]->getPts()];
+        return [array_map(static fn(Packet $pkt): string => $pkt->getData(), $packets), $packets[0]->getPts()];
     }
 
     /**
      * Package encoded data for transport
      *
-     * @param Packet $packet Encoded audio packet
+     * @param Packet|EncodedPacket $packet Encoded audio packet
      * @return array|string [packets, pts] Array containing packet data and converted timestamp
      */
+    #[\Override]
     public function pack(Packet|EncodedPacket $packet): string|array
     {
         if ($packet instanceof EncodedPacket) {
             // Already timed in the 8kHz PCM RTP clock: pass it straight through, no codec needed.
             return [[$packet->getData()], $packet->getTimestamp()];
         }
-        return [[$packet->getData()], $this->convertTimebase($packet->getPts(), (array)$packet->getTimeBase(), [1, 8000])];
+        return [[$packet->getData()], $this->convertTimebase($packet->getPts() ?? 0, $this->getTimebaseArray($packet->getTimeBase()), [1, 8000])];
     }
 
     /**

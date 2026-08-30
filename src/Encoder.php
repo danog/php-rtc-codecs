@@ -42,6 +42,7 @@ abstract class Encoder implements EncoderInterface
      *
      * @param int $bitrate New bitrate in bits per second
      */
+    #[\Override]
     public function setBitrate(int $bitrate): void
     {
         $this->bitrate = $bitrate;
@@ -51,15 +52,26 @@ abstract class Encoder implements EncoderInterface
      * Converts timestamps between different timebases
      *
      * @param int $pts Presentation timestamp to convert
-     * @param array $fromBase Source timebase as ['num' => numerator, 'den' => denominator]
-     * @param array $toBase Target timebase as [numerator, denominator]
+     * @param array{num: int, den: int} $fromBase Source timebase as ['num' => numerator, 'den' => denominator]
+     * @param array{0: int, 1: int} $toBase Target timebase as [numerator, denominator]
      * @return int Converted timestamp
      */
     protected function convertTimebase(int $pts, array $fromBase, array $toBase): int
     {
         if ($fromBase['num'] != $toBase[0] || $fromBase['den'] != $toBase[1]) {
-            $pts = (int)($pts * ($fromBase['num'] / $fromBase['den']) / ($toBase[0] / $toBase[1]));
+            $pts = (int)((float)$pts * ((float)$fromBase['num'] / (float)$fromBase['den']) / ((float)$toBase[0] / (float)$toBase[1]));
         }
         return $pts;
+    }
+
+    /**
+     * Normalizes a time base object ({num, den}) into the array shape convertTimebase() expects
+     *
+     * @param \stdClass $timeBase Time base object as returned by frames and packets
+     * @return array{num: int, den: int}
+     */
+    protected function getTimebaseArray(\stdClass $timeBase): array
+    {
+        return ['num' => (int)$timeBase->num, 'den' => (int)$timeBase->den];
     }
 }

@@ -21,7 +21,7 @@ use Webrtc\AVCodec\Exception\AvCodecException;
  *
  * @package Webrtc\Codecs\Audio\PCM
  */
-class PCMaEncoder extends PCMEncoder
+final class PCMaEncoder extends PCMEncoder
 {
     /**
      * Constructor

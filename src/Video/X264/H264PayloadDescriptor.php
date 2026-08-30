@@ -24,7 +24,7 @@ use Webrtc\Exception\NotImplementedException;
  *
  * @package Webrtc\Codecs\Video\X264
  */
-class H264PayloadDescriptor implements PayloadDescriptorInterface
+final class H264PayloadDescriptor implements PayloadDescriptorInterface
 {
     /**
      * @var int NAL_HEADER_SIZE Size of NAL unit header (1 byte)
@@ -55,6 +55,7 @@ class H264PayloadDescriptor implements PayloadDescriptorInterface
      *               - string: Reconstructed NAL unit(s) with start codes
      * @throws InvalidArgumentException For malformed packets
      */
+    #[\Override]
     public static function decode(string $data): array
     {
         if (strlen($data) < 2) {
@@ -128,7 +129,9 @@ class H264PayloadDescriptor implements PayloadDescriptorInterface
                 throw new InvalidArgumentException("STAP-A length field is truncated");
             }
 
-            $naluSize = unpack("n", substr($data, $pos, self::LENGTH_FIELD_SIZE))[1];
+            $naluSize = unpack("n", substr($data, $pos, self::LENGTH_FIELD_SIZE));
+            \assert($naluSize !== false);
+            $naluSize = (int)$naluSize[1];
             $pos += self::LENGTH_FIELD_SIZE;
             $offsets[] = $pos;
 
@@ -153,6 +156,7 @@ class H264PayloadDescriptor implements PayloadDescriptorInterface
      *
      * @throws NotImplementedException Always throws
      */
+    #[\Override]
     public function encode(): string
     {
         throw new NotImplementedException("encoding not supported!");

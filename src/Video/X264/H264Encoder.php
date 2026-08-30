@@ -40,7 +40,7 @@ use Webrtc\Exception\RuntimeException;
  *
  * @package Webrtc\Codecs\Video\X264
  */
-class H264Encoder extends Encoder implements EncoderInterface
+final class H264Encoder extends Encoder implements EncoderInterface
 {
     private const FU_A_HEADER_SIZE = 2;
     private const NAL_TYPE_FU_A = 28;
@@ -97,7 +97,7 @@ class H264Encoder extends Encoder implements EncoderInterface
     /**
      * Packetizes encoded H.264 data
      *
-     * @param iterable $packets Encoded NAL units
+     * @param iterable<string> $packets Encoded NAL units
      * @return array Packetized RTP payloads
      */
     public static function packetize(iterable $packets): array
@@ -183,10 +183,10 @@ class H264Encoder extends Encoder implements EncoderInterface
      * Aggregates small NAL units into STAP-A packets
      *
      * @param string $data Initial NAL unit
-     * @param Iterator $packetsIterator Remaining NAL units
-     * @return array [STAP-A packet, next NAL unit]
+     * @param \Iterator<mixed, string> $packetsIterator Remaining NAL units
+     * @return array{0: string, 1: string|null} [STAP-A packet, next NAL unit]
      */
-    private static function packetizeStapA(string $data, Iterator $packetsIterator): array
+    private static function packetizeStapA(string $data, \Iterator $packetsIterator): array
     {
         $counter = 0;
         $availableSize = self::PACKET_MAX - self::STAP_A_HEADER_SIZE;
@@ -230,7 +230,7 @@ class H264Encoder extends Encoder implements EncoderInterface
      * Splits H.264 bitstream into NAL units
      *
      * @param string $buf Encoded bitstream
-     * @return Generator NAL units
+     * @return Generator<mixed, string> NAL units
      */
     public static function splitBitstream(string $buf): Generator
     {
@@ -264,7 +264,7 @@ class H264Encoder extends Encoder implements EncoderInterface
      *
      * @param VideoFrame $frame Input frame
      * @param bool $useKeyframe Force keyframe
-     * @return Generator Encoded NAL units
+     * @return Generator<mixed, string> Encoded NAL units
      */
     public function encodeFrame(VideoFrame $frame, bool $useKeyframe): Generator
     {
@@ -284,9 +284,11 @@ class H264Encoder extends Encoder implements EncoderInterface
             $this->encoderContext = $this->getContext($frame->getVideoFormat());
         }
 
+        \assert($this->encoderContext !== null);
         $dataToSend = "";
 
         $transCoder = new TransCoder($this->encoderContext);
+        /** @var Packet[] $packets */
         $packets = $transCoder->encode($frame);
 
         foreach ($packets as $packet) {
@@ -319,6 +321,7 @@ class H264Encoder extends Encoder implements EncoderInterface
      * @param bool $useKeyframe Force keyframe
      * @return array [packets, timestamp]
      */
+    #[\Override]
     public function encode(FrameInterface $frame, bool $useKeyframe = false): array
     {
         if (!$frame instanceof VideoFrame) {
@@ -327,7 +330,7 @@ class H264Encoder extends Encoder implements EncoderInterface
 
         $this->ensureEncoder();
         $packets = $this->encodeFrame($frame, $useKeyframe);
-        $timestamp = $this->convertTimebase($frame->getPts(), (array)$frame->getTimeBase(), [1, 90000]);
+        $timestamp = $this->convertTimebase($frame->getPts() ?? 0, $this->getTimebaseArray($frame->getTimeBase()), [1, 90000]);
 
         return [self::packetize($packets), $timestamp];
     }
@@ -336,9 +339,9 @@ class H264Encoder extends Encoder implements EncoderInterface
      * Gets appropriate encoder context
      *
      * @param VideoFormat $format Video format
-     * @return Context|null Encoder context
+     * @return VideoContext|null Encoder context
      */
-    public function getContext(VideoFormat $format): ?Context
+    public function getContext(VideoFormat $format): ?VideoContext
     {
         foreach (self::DEFAULT_CODEC_NAMES as $codecName) {
             try {
@@ -355,11 +358,12 @@ class H264Encoder extends Encoder implements EncoderInterface
      *
      * @param VideoFormat $format Video format
      * @param Codec $codec Codec to use
-     * @return Context|null Encoder context
+     * @return VideoContext Encoder context
      */
-    private function createContext(VideoFormat $format, Codec $codec): ?Context
+    private function createContext(VideoFormat $format, Codec $codec): VideoContext
     {
         $videoContext = VideoContext::create($codec);
+        \assert($videoContext instanceof VideoContext);
         $videoContext->setFormat($format);
         $videoContext->setBitRate($this->bitrate);
         $videoContext->setFramerate(30, 1);
@@ -377,15 +381,16 @@ class H264Encoder extends Encoder implements EncoderInterface
     /**
      * Packetizes encoded packet for RTP
      *
-     * @param Packet $packet Encoded packet
+     * @param Packet|EncodedPacket $packet Encoded packet
      * @return array [packets, timestamp]
      */
+    #[\Override]
     public function pack(Packet|EncodedPacket $packet): array
     {
         $packages = $this->splitBitstream($packet->getData());
         $timestamp = $packet instanceof EncodedPacket
             ? $packet->getTimestamp()
-            : $this->convertTimebase($packet->getPts(), (array)$packet->getTimeBase(), [1, 90000]);
+            : $this->convertTimebase($packet->getPts() ?? 0, $this->getTimebaseArray($packet->getTimeBase()), [1, 90000]);
 
         return [$this->packetize($packages), $timestamp];
     }

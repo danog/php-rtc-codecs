@@ -22,7 +22,7 @@ use Webrtc\RTPParameter\RTCRtpCodecParameters;
  *
  * @package Webrtc\Codecs
  */
-class CodecUtility
+final class CodecUtility
 {
     /**
      * Gets the number of available CPU cores
@@ -34,7 +34,12 @@ class CodecUtility
      */
     public static function getNumberOfCPUCores(): int
     {
-        return (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? shell_exec('echo %NUMBER_OF_PROCESSORS%') : shell_exec('nproc'));
+        $cores = PHP_OS_FAMILY === 'Windows'
+            ? (string) getenv('NUMBER_OF_PROCESSORS')
+            : (string) @exec('nproc');
+
+        $cores = trim($cores);
+        return $cores !== '' ? (int) $cores : 1;
     }
 
     /**

@@ -23,7 +23,7 @@ use Webrtc\AVCodec\Exception\AvCodecException;
  *
  * @package Webrtc\Codecs\Audio\PCM
  */
-class PCMuEncoder extends PCMEncoder
+final class PCMuEncoder extends PCMEncoder
 {
     /**
      * Constructor - Initializes μ-law PCM encoder

@@ -44,7 +44,7 @@ use Webrtc\RTPParameter\RTCRtpHeaderExtensionParameters;
  *
  * @package Webrtc\Codecs
  */
-class Codec
+final class Codec
 {
     /**
      * @var RTCRtpCodecParameters[][] Registered codecs by media type
@@ -52,7 +52,7 @@ class Codec
     private array $codecs;
 
     /**
-     * @var array Header extensions by media type
+     * @var array{audio: RTCRtpHeaderExtensionParameters[], video: RTCRtpHeaderExtensionParameters[]} Header extensions by media type
      */
     private array $headerExtensions;
 
@@ -107,7 +107,7 @@ class Codec
      * Adds video codec with RTX support
      *
      * @param string $mimeType Codec MIME type
-     * @param array $parameters Codec-specific parameters
+     * @param array<string, int|string|null> $parameters Codec-specific parameters
      */
     private function addVideoCodec(string $mimeType, array $parameters = []): void
     {
@@ -190,7 +190,7 @@ class Codec
             }
         }
 
-        foreach ($this->headerExtensions[$kind] as $extension) {
+foreach ($this->headerExtensions[$kind] as $extension) {
             $headerExtensions[] = new RTCRtpHeaderExtensionCapability($extension->uri);
         }
 
@@ -263,7 +263,7 @@ class Codec
      */
     public function getCodecs(?string $kind = null): array
     {
-        return $kind ? $this->codecs[$kind] : $this->codecs;
+        return $kind !== null ? $this->codecs[$kind] : $this->codecs;
     }
 
     /**
@@ -274,6 +274,6 @@ class Codec
      */
     public function getHeaderExtensions(?string $kind = null): array
     {
-        return $kind ? $this->headerExtensions[$kind] : $this->headerExtensions;
+        return $kind !== null ? $this->headerExtensions[$kind] : $this->headerExtensions;
     }
 }

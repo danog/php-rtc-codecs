@@ -51,6 +51,7 @@ abstract class PCMDecoder implements DecoderInterface
         AVCodec::init();
 
         $audioContext = AudioContext::create(new Codec($codecName));
+        \assert($audioContext instanceof AudioContext);
         $audioContext->setFormat("s16");
         $audioContext->setLayout("mono");
         $audioContext->setSampleRate(self::SAMPLE_RATE);
@@ -63,6 +64,7 @@ abstract class PCMDecoder implements DecoderInterface
      * @param JitterFrameInterface $frame Input frame containing encoded audio and timestamp
      * @return array Array of decoded AudioFrame objects
      */
+    #[\Override]
     public function decode(JitterFrameInterface $frame): array
     {
         $packet = new Packet();
@@ -70,6 +72,7 @@ abstract class PCMDecoder implements DecoderInterface
         $packet->setPts($frame->getTimestamp());
         $packet->setTimeBase(1, 8000);
 
+        \assert($this->transcoder instanceof TransCoder);
         return $this->transcoder->decode($packet);
     }
 }

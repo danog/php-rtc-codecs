@@ -37,7 +37,7 @@ use Webrtc\Codecs\EncoderInterface;
  *
  * @package Webrtc\Codecs\Video\Vp8
  */
-class Vp8Encoder extends Encoder implements EncoderInterface
+final class Vp8Encoder extends Encoder implements EncoderInterface
 {
     /**
      * @var int VIDEO_CLOCK_RATE Standard video clock rate (90kHz)
@@ -99,15 +99,17 @@ class Vp8Encoder extends Encoder implements EncoderInterface
      * @return array [payloads, timestamp] Encoded packets and presentation timestamp
      * @throws AvCodecException
      */
+    #[\Override]
     public function encode(FrameInterface|VideoFrame $frame, bool $useKeyframe = false): array
     {
         $this->ensureEncoder();
+        \assert($frame instanceof VideoFrame);
 
         if ($frame->getVideoFormat()->getName() !== "yuv420p") {
             $frame = $frame->reformat(format: "yuv420p");
         }
 
-        if ($this->encoderContext && (
+        if ($this->encoderContext !== null && (
                 $frame->getVideoFormat()->getWidth() !== $this->encoderContext->getWidth() ||
                 $frame->getVideoFormat()->getHeight() !== $this->encoderContext->getHeight() ||
                 $this->bitrate !== $this->encoderContext->getBitrate()
@@ -129,6 +131,7 @@ class Vp8Encoder extends Encoder implements EncoderInterface
 
         $buffer = "";
         foreach ($transCoder->encode($frame) as $packet) {
+            \assert($packet instanceof Packet);
             $buffer .= $packet->getData();
         }
 
@@ -148,6 +151,7 @@ class Vp8Encoder extends Encoder implements EncoderInterface
     private function createContext(VideoFormat $format): VideoContext
     {
         $context = VideoContext::create(new Codec("libvpx", "w"));
+        \assert($context instanceof VideoContext);
         $context->setFormat($format);
         $context->setBitRate($this->bitrate);
         $context->setFramerate(self::MAX_FRAME_RATE, 1);
@@ -168,12 +172,13 @@ class Vp8Encoder extends Encoder implements EncoderInterface
      * @param Packet|EncodedPacket $packet Encoded video packet
      * @return array [payloads, timestamp] Packets and converted timestamp
      */
+    #[\Override]
     public function pack(Packet|EncodedPacket $packet): array
     {
         $payloads = $this->packetize($packet->getData(), $this->pictureId);
         $timestamp = $packet instanceof EncodedPacket
             ? $packet->getTimestamp()
-            : $this->convertTimebase($packet->getPts(), (array)$packet->getTimeBase(), [1, self::VIDEO_CLOCK_RATE]);
+            : $this->convertTimebase($packet->getPts() ?? 0, $this->getTimebaseArray($packet->getTimeBase()), [1, self::VIDEO_CLOCK_RATE]);
         $this->pictureId = ($this->pictureId + 1) % (1 << 15);
         return [$payloads, $timestamp];
     }
@@ -213,7 +218,7 @@ class Vp8Encoder extends Encoder implements EncoderInterface
      */
     public function getTimeBase(VideoFrame $frame): int
     {
-        return $this->convertTimebase($frame->getPts(), (array)$frame->getTimeBase(), [1, self::VIDEO_CLOCK_RATE]);
+        return $this->convertTimebase($frame->getPts() ?? 0, $this->getTimebaseArray($frame->getTimeBase()), [1, self::VIDEO_CLOCK_RATE]);
     }
 
     /**
@@ -265,6 +270,7 @@ class Vp8Encoder extends Encoder implements EncoderInterface
      *
      * @param int $bitrate New bitrate in bits per second
      */
+    #[\Override]
     public function setBitrate(int $bitrate): void
     {
         parent::setBitrate($bitrate);

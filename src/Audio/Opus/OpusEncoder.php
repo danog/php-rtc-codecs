@@ -35,9 +35,8 @@ use Webrtc\Exception\RuntimeException;
  *
  * @package Webrtc\Codecs\Audio\Opus
  */
-class OpusEncoder extends BEncoder implements EncoderInterface
-{
-    /**
+final class OpusEncoder extends BEncoder implements EncoderInterface
+{    /**
      * @var int SAMPLE_RATE Opus required sample rate (48kHz)
      */
     private const SAMPLE_RATE = 48000;
@@ -48,14 +47,14 @@ class OpusEncoder extends BEncoder implements EncoderInterface
     private const SAMPLES_PER_FRAME = 960;
 
     /**
-     * @var TransCoder $transcoder Opus encoder transcoder instance
+     * @var TransCoder|null $transcoder Opus encoder transcoder instance
      */
-    private TransCoder $transcoder;
+    private ?TransCoder $transcoder = null;
 
     /**
-     * @var AudioResampler $resampler Audio resampler instance
+     * @var AudioResampler|null $resampler Audio resampler instance
      */
-    private AudioResampler $resampler;
+    private ?AudioResampler $resampler = null;
 
     /**
      * Constructor
@@ -81,6 +80,7 @@ class OpusEncoder extends BEncoder implements EncoderInterface
         AVFilter::init();
 
         $context = AudioContext::create(new Codec("libopus", "w"));
+        \assert($context instanceof AudioContext);
         $context->setFormat("s16");
         $context->setLayout("stereo");
         $context->setSampleRate(self::SAMPLE_RATE);
@@ -98,15 +98,21 @@ class OpusEncoder extends BEncoder implements EncoderInterface
      * @throws RuntimeException If frame validation fails
      * @throws AvCodecException
      */
+    #[\Override]
     public function encode(FrameInterface|AudioFrame $frame, bool $useKeyframe = false): string|array
     {
         $this->ensureEncoder();
         $this->validateFrame($frame);
+        \assert($frame instanceof AudioFrame);
+        \assert($this->resampler instanceof AudioResampler);
         $frames = $this->resampler->resample($frame);
 
         $packets = [];
         foreach ($frames as $frame) {
-            foreach ($this->transcoder->encode($frame) as $packet) {
+            \assert($this->transcoder instanceof TransCoder);
+            /** @var Packet[] $encoded */
+            $encoded = $this->transcoder->encode($frame);
+            foreach ($encoded as $packet) {
                 $packets[] = $packet->getData();
             }
         }
@@ -117,16 +123,17 @@ class OpusEncoder extends BEncoder implements EncoderInterface
     /**
      * Package encoded data into transport format
      *
-     * @param Packet $packet Encoded audio packet
+     * @param Packet|EncodedPacket $packet Encoded audio packet
      * @return array|string [packets, pts] Array containing packet data and converted timestamp
      */
+    #[\Override]
     public function pack(Packet|EncodedPacket $packet): string|array
     {
         if ($packet instanceof EncodedPacket) {
             // Already timed in the 48kHz OPUS clock: pass it straight through, no codec needed.
             return [[$packet->getData()], $packet->getTimestamp()];
         }
-        return [[$packet->getData()], $this->convertTimebase($packet->getPts(), (array)$packet->getTimeBase(), [1, 48000])];
+        return [[$packet->getData()], $this->convertTimebase($packet->getPts() ?? 0, $this->getTimebaseArray($packet->getTimeBase()), [1, 48000])];
     }
 
     /**

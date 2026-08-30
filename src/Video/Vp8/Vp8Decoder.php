@@ -30,7 +30,7 @@ use Webrtc\Codecs\JitterFrameInterface;
  *
  * @package Webrtc\Codecs\Video\Vp8
  */
-class Vp8Decoder implements DecoderInterface
+final class Vp8Decoder implements DecoderInterface
 {
     /**
      * @var TransCoder $transcoder VP8 transcoder instance
@@ -46,7 +46,9 @@ class Vp8Decoder implements DecoderInterface
     public function __construct()
     {
         AVCodec::init();
-        $this->transcoder = new TransCoder(VideoContext::create(new Codec("vp8")));
+        $context = VideoContext::create(new Codec("vp8"));
+        \assert($context instanceof VideoContext);
+        $this->transcoder = new TransCoder($context);
     }
 
     /**
@@ -55,6 +57,7 @@ class Vp8Decoder implements DecoderInterface
      * @param JitterFrameInterface $frame Input frame containing VP8 payload and timestamp
      * @return array Array of decoded VideoFrame objects, empty on decoding failure
      */
+    #[\Override]
     public function decode(JitterFrameInterface $frame): array
     {
         try {

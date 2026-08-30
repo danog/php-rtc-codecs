@@ -29,7 +29,7 @@ use Webrtc\Codecs\JitterFrameInterface;
  *
  * @package Webrtc\Codecs\Video\X264
  */
-class H264Decoder implements DecoderInterface
+final class H264Decoder implements DecoderInterface
 {
     /**
      * @var TransCoder $transcoder H.264 transcoder instance
@@ -48,7 +48,9 @@ class H264Decoder implements DecoderInterface
     public function __construct()
     {
         AVCodec::init();
-        $this->transcoder = new TransCoder(VideoContext::create(new Codec("h264")));
+        $context = VideoContext::create(new Codec("h264"));
+        \assert($context instanceof VideoContext);
+        $this->transcoder = new TransCoder($context);
     }
 
     /**
@@ -60,6 +62,7 @@ class H264Decoder implements DecoderInterface
      * @return array Array of decoded VideoFrame objects
      *               Empty array on decoding failure
      */
+    #[\Override]
     public function decode(JitterFrameInterface $frame): array
     {
         try {

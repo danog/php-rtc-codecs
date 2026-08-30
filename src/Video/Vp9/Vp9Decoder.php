@@ -30,7 +30,7 @@ use Webrtc\Codecs\JitterFrameInterface;
  *
  * @package Webrtc\Codecs\Video\Vp9
  */
-class Vp9Decoder implements DecoderInterface
+final class Vp9Decoder implements DecoderInterface
 {
     /**
      * @var TransCoder $transcoder VP9 transcoder instance
@@ -46,7 +46,9 @@ class Vp9Decoder implements DecoderInterface
     public function __construct()
     {
         AVCodec::init();
-        $this->transcoder = new TransCoder(VideoContext::create(new Codec("vp9")));
+        $context = VideoContext::create(new Codec("vp9"));
+        \assert($context instanceof VideoContext);
+        $this->transcoder = new TransCoder($context);
     }
 
     /**
@@ -55,6 +57,7 @@ class Vp9Decoder implements DecoderInterface
      * @param JitterFrameInterface $frame Input frame containing VP9 payload and timestamp
      * @return array Array of decoded VideoFrame objects, empty on decoding failure
      */
+    #[\Override]
     public function decode(JitterFrameInterface $frame): array
     {
         try {

@@ -33,7 +33,7 @@ use Webrtc\Codecs\JitterFrameInterface;
  *
  * @package Webrtc\Codecs\Audio\Opus
  */
-class OpusDecoder implements DecoderInterface
+final class OpusDecoder implements DecoderInterface
 {
     /**
      * @var int SAMPLE_RATE Opus required sample rate (48kHz)
@@ -74,6 +74,7 @@ class OpusDecoder implements DecoderInterface
         AVFilter::init();
 
         $context = AudioContext::create(new Codec("opus"));
+        \assert($context instanceof AudioContext);
         $context->setFormat("fltp");
         $context->setLayout("stereo");
         $context->setSampleRate(self::SAMPLE_RATE);
@@ -89,6 +90,7 @@ class OpusDecoder implements DecoderInterface
      * @return AudioFrame[] Array containing one decoded AudioFrame (Opus uses fixed frame sizes)
      * @throws AvCodecException
      */
+    #[\Override]
     public function decode(JitterFrameInterface $frame): array
     {
         $packet = new Packet();
@@ -98,6 +100,7 @@ class OpusDecoder implements DecoderInterface
 
         $frames = [];
         foreach ($this->transcoder->decode($packet) as $decoded) {
+            \assert($decoded instanceof AudioFrame);
             foreach ($this->resampler->resample($decoded) as $resampled) {
                 $frames[] = $this->buildFrame($resampled, $frame->getTimestamp());
             }
