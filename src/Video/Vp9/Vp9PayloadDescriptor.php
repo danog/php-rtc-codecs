@@ -40,7 +40,7 @@ use Webrtc\Exception\InvalidArgumentException;
  *
  * @package Webrtc\Codecs\Video\Vp9
  */
-class Vp9PayloadDescriptor implements PayloadDescriptorInterface
+final class Vp9PayloadDescriptor implements PayloadDescriptorInterface
 {
     /**
      * @var int $startOfFrame Start of a frame (B bit)
@@ -68,7 +68,7 @@ class Vp9PayloadDescriptor implements PayloadDescriptorInterface
     private bool $nonReference;
 
     /**
-     * @var array|null $layerIndices [temporalId, switchingUp, spatialId, interLayer] when present
+     * @var array{0: int, 1: int, 2: int, 3: int}|null $layerIndices [temporalId, switchingUp, spatialId, interLayer] when present
      */
     private ?array $layerIndices;
 
@@ -78,6 +78,11 @@ class Vp9PayloadDescriptor implements PayloadDescriptorInterface
     private ?int $tl0picidx;
 
     /**
+     * @var string|null $scalabilityStructure Raw scalability structure (SS) bytes, when the V bit is set
+     */
+    private ?string $scalabilityStructure;
+
+    /**
      * Constructor
      *
      * @param int $startOfFrame Whether this payload starts a frame
@@ -85,8 +90,9 @@ class Vp9PayloadDescriptor implements PayloadDescriptorInterface
      * @param bool $interPicturePredicted Whether the frame is inter-picture predicted
      * @param int|null $pictureId Optional picture ID
      * @param bool $nonReference Whether upper spatial layers do not reference this frame
-     * @param array|null $layerIndices Optional layer indices
+     * @param array{0: int, 1: int, 2: int, 3: int}|null $layerIndices Optional layer indices
      * @param int|null $tl0picidx Optional TL0PICIDX, non-flexible mode only
+     * @param string|null $scalabilityStructure Optional raw scalability structure bytes (sets the V bit)
      */
     public function __construct(
         int    $startOfFrame,
@@ -95,7 +101,8 @@ class Vp9PayloadDescriptor implements PayloadDescriptorInterface
         ?int   $pictureId = null,
         bool   $nonReference = false,
         ?array $layerIndices = null,
-        ?int   $tl0picidx = null
+        ?int   $tl0picidx = null,
+        ?string $scalabilityStructure = null
     )
     {
         $this->startOfFrame = $startOfFrame;
@@ -105,6 +112,7 @@ class Vp9PayloadDescriptor implements PayloadDescriptorInterface
         $this->nonReference = $nonReference;
         $this->layerIndices = $layerIndices;
         $this->tl0picidx = $tl0picidx;
+        $this->scalabilityStructure = $scalabilityStructure;
     }
 
     /**
@@ -163,7 +171,7 @@ class Vp9PayloadDescriptor implements PayloadDescriptorInterface
     /**
      * Gets layer indices
      *
-     * @return array|null [temporalId, switchingUp, spatialId, interLayer] or null
+     * @return array{0: int, 1: int, 2: int, 3: int}|null [temporalId, switchingUp, spatialId, interLayer] or null
      */
     public function getLayerIndices(): ?array
     {
@@ -221,10 +229,23 @@ class Vp9PayloadDescriptor implements PayloadDescriptorInterface
     }
 
     /**
+     * Sets the scalability structure (SS)
+     *
+     * Passing raw SS bytes sets the V bit and appends them to the descriptor; null clears it.
+     *
+     * @param string|null $scalabilityStructure New scalability structure bytes, or null
+     */
+    public function setScalabilityStructure(?string $scalabilityStructure): void
+    {
+        $this->scalabilityStructure = $scalabilityStructure;
+    }
+
+    /**
      * Encodes descriptor to binary string
      *
      * @return string Binary payload descriptor
      */
+    #[\Override]
     public function encode(): string
     {
         $octet = 0;
@@ -245,6 +266,10 @@ class Vp9PayloadDescriptor implements PayloadDescriptorInterface
         if ($this->endOfFrame) {
             $octet |= 1 << 2;
         }
+        // The V bit announces a scalability structure appended after the layer indices.
+        if ($this->scalabilityStructure !== null) {
+            $octet |= 1 << 1;
+        }
         if ($this->nonReference) {
             $octet |= 1;
         }
@@ -255,6 +280,9 @@ class Vp9PayloadDescriptor implements PayloadDescriptorInterface
         }
         if ($this->layerIndices !== null) {
             $data .= $this->encodeLayerIndices();
+        }
+        if ($this->scalabilityStructure !== null) {
+            $data .= $this->scalabilityStructure;
         }
 
         return $data;
@@ -279,6 +307,7 @@ class Vp9PayloadDescriptor implements PayloadDescriptorInterface
      */
     private function encodeLayerIndices(): string
     {
+        \assert($this->layerIndices !== null);
         [$temporalId, $switchingUp, $spatialId, $interLayer] = $this->layerIndices;
         $data = pack(
             'C',
@@ -293,9 +322,10 @@ class Vp9PayloadDescriptor implements PayloadDescriptorInterface
      * Decodes descriptor from binary data
      *
      * @param string $data Binary input data
-     * @return array [Vp9PayloadDescriptor, remaining_data]
+     * @return array{0: Vp9PayloadDescriptor, 1: string} [Vp9PayloadDescriptor, remaining_data]
      * @throws InvalidArgumentException On malformed input
      */
+    #[\Override]
     public static function decode(string $data): array
     {
         if (strlen($data) < 1) {
@@ -355,7 +385,7 @@ class Vp9PayloadDescriptor implements PayloadDescriptorInterface
      *
      * @param string $data Binary input data
      * @param int $pos Current offset
-     * @return array [pictureId, newPos]
+     * @return array{0: int, 1: int} [pictureId, newPos]
      * @throws InvalidArgumentException On truncated input
      */
     private static function decodePictureId(string $data, int $pos): array
@@ -367,7 +397,9 @@ class Vp9PayloadDescriptor implements PayloadDescriptorInterface
             if (strlen($data) < $pos + 2) {
                 throw new InvalidArgumentException("VP9 descriptor has truncated long PictureID");
             }
-            return [unpack('n', substr($data, $pos, 2))[1] & 0x7FFF, $pos + 2];
+            $decoded = unpack('n', substr($data, $pos, 2));
+            \assert($decoded !== false);
+            return [((int)$decoded[1]) & 0x7FFF, $pos + 2];
         }
 
         return [ord($data[$pos]), $pos + 1];
@@ -379,7 +411,7 @@ class Vp9PayloadDescriptor implements PayloadDescriptorInterface
      * @param string $data Binary input data
      * @param int $pos Current offset
      * @param bool $flexibleMode Whether the F bit is set
-     * @return array [layerIndices, tl0picidx, newPos]
+     * @return array{0: array{0: int, 1: int, 2: int, 3: int}, 1: int|null, 2: int} [layerIndices, tl0picidx, newPos]
      * @throws InvalidArgumentException On truncated input
      */
     private static function decodeLayerIndices(string $data, int $pos, bool $flexibleMode): array

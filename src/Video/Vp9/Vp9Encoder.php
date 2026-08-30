@@ -30,7 +30,7 @@ use Webrtc\Exception\RuntimeException;
  *
  * @package Webrtc\Codecs\Video\Vp9
  */
-class Vp9Encoder extends Encoder
+final class Vp9Encoder extends Encoder
 {
     /**
      * @var int Maximum RTP payload size, chosen to stay inside a typical MTU
@@ -48,13 +48,19 @@ class Vp9Encoder extends Encoder
     private int $pictureId;
 
     /**
+     * @var int $tl0PicIdx Running temporal-layer-zero index (8-bit)
+     */
+    private int $tl0PicIdx;
+
+    /**
      * Constructor
      *
-     * Picks a random initial picture ID, as recommended for a fresh RTP stream.
+     * Picks a random initial picture ID and TL0PICIDX, as recommended for a fresh RTP stream.
      */
     public function __construct()
     {
         $this->pictureId = rand(0, (1 << 15) - 1);
+        $this->tl0PicIdx = rand(0, 0xFF);
     }
 
     /**
@@ -68,6 +74,7 @@ class Vp9Encoder extends Encoder
      * @param bool $useKeyframe Force keyframe generation
      * @throws RuntimeException Always
      */
+    #[\Override]
     public function encode(FrameInterface $frame, bool $useKeyframe = false): array
     {
         throw new RuntimeException(
@@ -82,14 +89,18 @@ class Vp9Encoder extends Encoder
      * @param Packet|EncodedPacket $packet Encoded video packet
      * @return array [payloads, timestamp] Packets and converted timestamp
      */
+    #[\Override]
     public function pack(Packet|EncodedPacket $packet): array
     {
         $keyframe = $packet instanceof EncodedPacket && $packet->isKeyframe();
-        $payloads = $this->packetize($packet->getData(), $this->pictureId, $keyframe);
+        $payloads = $this->packetize($packet->getData(), $this->pictureId, $keyframe, $this->tl0PicIdx);
         $timestamp = $packet instanceof EncodedPacket
             ? $packet->getTimestamp()
-            : $this->convertTimebase($packet->getPts(), (array)$packet->getTimeBase(), [1, self::VIDEO_CLOCK_RATE]);
+            : $this->convertTimebase($packet->getPts() ?? 0, $this->getTimebaseArray($packet->getTimeBase()), [1, self::VIDEO_CLOCK_RATE]);
         $this->pictureId = ($this->pictureId + 1) % (1 << 15);
+        // Every frame is a temporal-layer-zero frame in this single-layer stream, so the index
+        // that anchors the non-flexible reference structure advances once per frame.
+        $this->tl0PicIdx = ($this->tl0PicIdx + 1) & 0xFF;
 
         return [$payloads, $timestamp];
     }
@@ -104,14 +115,33 @@ class Vp9Encoder extends Encoder
      * @param string $buffer Encoded frame data
      * @param int $pictureId Picture identifier
      * @param bool $keyframe Whether the frame is a keyframe
+     * @param int $tl0PicIdx Temporal-layer-zero index for this frame
      * @return array Array of RTP payload packets
      */
-    public function packetize(string $buffer, int $pictureId, bool $keyframe = false): array
+    public function packetize(string $buffer, int $pictureId, bool $keyframe = false, int $tl0PicIdx = 0): array
     {
         $payloads = [];
-        // The P bit means "inter-picture predicted", so it is precisely the inverse of
-        // a keyframe: a receiver uses it to find a decodable starting point.
-        $descriptor = new Vp9PayloadDescriptor(1, 0, !$keyframe, $pictureId);
+        // WebRTC's VP9 reference finder demands more than the bare frame boundaries in
+        // non-flexible mode: it drops any frame whose descriptor omits TL0PICIDX, and drops a
+        // keyframe that carries no scalability structure (rtp_vp9_ref_finder.cc). So describe the
+        // stream as a single spatial/temporal layer — layer indices with TID=SID=0 plus a running
+        // TL0PICIDX on every packet — and attach a minimal SS to the first packet of each keyframe.
+        // The P bit means "inter-picture predicted", so it is precisely the inverse of a keyframe:
+        // a receiver uses it to find a decodable starting point.
+        $descriptor = new Vp9PayloadDescriptor(
+            startOfFrame: 1,
+            endOfFrame: 0,
+            interPicturePredicted: !$keyframe,
+            pictureId: $pictureId,
+            layerIndices: [0, 0, 0, 0],
+            tl0picidx: $tl0PicIdx & 0xFF,
+        );
+        if ($keyframe) {
+            // Minimal SS: N_S=0 (one spatial layer), Y=0 (no resolution signalled), G=0 (no GOF
+            // description, so the receiver assumes a single temporal layer). One zero octet says all
+            // of that; only the first packet of the keyframe carries it.
+            $descriptor->setScalabilityStructure("\x00");
+        }
 
         $length = strlen($buffer);
         $pos = 0;
@@ -124,10 +154,12 @@ class Vp9Encoder extends Encoder
             $pos += $size;
 
             $descriptor->setEndOfFrame($pos >= $length ? 1 : 0);
-            // Re-encode once the end bit is known: the descriptor length never changes,
-            // since the fields it carries are fixed for the whole frame.
+            // Re-encode once the end bit is known. The descriptor length may shrink after the first
+            // packet (the SS is dropped), which the per-iteration size computation above accounts for.
             $payloads[] = $descriptor->encode() . $fragment;
+            // B and the scalability structure belong to the first packet of the frame only.
             $descriptor->setStartOfFrame(0);
+            $descriptor->setScalabilityStructure(null);
         } while ($pos < $length);
 
         return $payloads;
