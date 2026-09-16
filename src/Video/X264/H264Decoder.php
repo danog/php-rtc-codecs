@@ -11,7 +11,6 @@
 
 namespace Webrtc\Codecs\Video\X264;
 
-use Throwable;
 use Webrtc\AVCodec\AVCodec;
 use Webrtc\AVCodec\Codec;
 use Webrtc\AVCodec\Context\VideoContext;
@@ -20,6 +19,7 @@ use Webrtc\AVCodec\Exception\AvCodecException;
 use Webrtc\AVCodec\TransCoder;
 use Webrtc\Codecs\DecoderInterface;
 use Webrtc\Codecs\JitterFrameInterface;
+use Webrtc\Exception\WebrtcExceptionInterface;
 
 /**
  * H.264 Video Decoder Class
@@ -72,7 +72,10 @@ final class H264Decoder implements DecoderInterface
             $packet->setTimeBase(1, 90000);   // Set time base
 
             return $this->transcoder->decode($packet);
-        } catch (Throwable) {
+        } catch (WebrtcExceptionInterface) {
+            // A decode failure (malformed bitstream) legitimately yields no frames; catching only
+            // library-domain exceptions lets genuine programming errors surface instead of being
+            // silently swallowed as an empty decode on the hot path.
             return [];
         }
     }

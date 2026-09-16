@@ -194,29 +194,28 @@ final class H264Encoder extends Encoder implements EncoderInterface
         $stapHeader = self::NAL_TYPE_STAP_A | (ord($data[0]) & 0xE0);
 
         $payload = "";
-        try {
-            $nalu = $data; // with header
-            while ($nalu !== null && strlen($nalu) <= $availableSize && $counter < 9) {
-                $stapHeader |= ord($nalu[0]) & 0x80;
+        // A failure while walking the NAL iterator must propagate: it was previously swallowed
+        // and a partially-aggregated STAP-A was returned with next=null, silently dropping the
+        // frame's remaining NAL units and emitting an incomplete packet.
+        $nalu = $data; // with header
+        while ($nalu !== null && strlen($nalu) <= $availableSize && $counter < 9) {
+            $stapHeader |= ord($nalu[0]) & 0x80;
 
-                $nri = ord($nalu[0]) & 0x60;
-                if (($stapHeader & 0x60) < $nri) {
-                    $stapHeader = ($stapHeader & 0x9F) | $nri;
-                }
-
-                $availableSize -= self::LENGTH_FIELD_SIZE + strlen($nalu);
-                $counter++;
-                $payload .= pack("n", strlen($nalu)) . $nalu;
-                $packetsIterator->next();
-                $nalu = $packetsIterator->current();
+            $nri = ord($nalu[0]) & 0x60;
+            if (($stapHeader & 0x60) < $nri) {
+                $stapHeader = ($stapHeader & 0x9F) | $nri;
             }
 
-            if ($counter == 0) {
-                $packetsIterator->next();
-                $nalu = $packetsIterator->current();
-            }
-        } catch (Exception) {
-            $nalu = null;
+            $availableSize -= self::LENGTH_FIELD_SIZE + strlen($nalu);
+            $counter++;
+            $payload .= pack("n", strlen($nalu)) . $nalu;
+            $packetsIterator->next();
+            $nalu = $packetsIterator->current();
+        }
+
+        if ($counter == 0) {
+            $packetsIterator->next();
+            $nalu = $packetsIterator->current();
         }
 
         if ($counter <= 1) {
@@ -280,11 +279,10 @@ final class H264Encoder extends Encoder implements EncoderInterface
         $frame->setPictureType($useKeyframe ? PictureType::I : PictureType::NONE);
 
         if ($this->encoderContext === null) {
-            // Initialize codec context
+            // Initialize codec context (throws if no H.264 encoder can be initialised)
             $this->encoderContext = $this->getContext($frame->getVideoFormat());
         }
 
-        \assert($this->encoderContext !== null);
         $dataToSend = "";
 
         $transCoder = new TransCoder($this->encoderContext);
@@ -339,18 +337,28 @@ final class H264Encoder extends Encoder implements EncoderInterface
      * Gets appropriate encoder context
      *
      * @param VideoFormat $format Video format
-     * @return VideoContext|null Encoder context
+     * @return VideoContext Encoder context
+     * @throws RuntimeException When none of the candidate encoders could be initialised.
      */
-    public function getContext(VideoFormat $format): ?VideoContext
+    public function getContext(VideoFormat $format): VideoContext
     {
+        $lastError = null;
         foreach (self::DEFAULT_CODEC_NAMES as $codecName) {
             try {
                 $this->codecBuffering = $codecName === "h264_omx";
                 return $this->createContext($format, new Codec($codecName, "w"));
-            } catch (Exception) {
+            } catch (Exception $e) {
+                // Each candidate may legitimately be unavailable; remember why and try the next.
+                $lastError = $e;
             }
         }
-        return null;
+        // Every candidate failed: surface the last reason instead of returning null and letting
+        // the caller blow up later with an opaque error on a null context.
+        throw new RuntimeException(
+            "Could not initialise any H.264 encoder (tried: " . implode(", ", self::DEFAULT_CODEC_NAMES) . ")",
+            0,
+            $lastError
+        );
     }
 
     /**
