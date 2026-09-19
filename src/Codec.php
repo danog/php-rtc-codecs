@@ -143,6 +143,10 @@ final class Codec
      */
     private function initCodecs(): void
     {
+        // These fmtp parameters are the generic *fallback* capability set advertised before any
+        // specific bitstream is known. When a pre-encoded file is transmitted, the caller should
+        // derive the real parameters from the bitstream with {@see self::fmtpFromBitstream()} and
+        // override these, so what is advertised matches what is actually sent.
         $this->addVideoCodec('video/VP8');
         // Profile 0 is the 8-bit 4:2:0 profile, the only one every VP9 decoder must support.
         $this->addVideoCodec('video/VP9', ['profile-id' => '0']);
@@ -153,8 +157,129 @@ final class Codec
                 'profile-level-id' => $profileLevelId,
             ]);
         }
-        // AV1 is transmitted pre-encoded (see Av1Encoder); profile 0 is the 8-bit 4:2:0 profile.
+        // AV1 fallback: profile 0 (8-bit 4:2:0 Main), Main tier; level-idx 5 (=level 3.1) is a mid
+        // default only used when the bitstream's real level is unknown.
         $this->addVideoCodec('video/AV1', ['profile' => '0', 'level-idx' => '5', 'tier' => '0']);
+    }
+
+    /**
+     * Derive the SDP `a=fmtp` parameters that describe an encoded video bitstream, so an endpoint can
+     * advertise what it actually transmits instead of a hardcoded guess.
+     *
+     * The parameters are read from the codec's configuration record (the Matroska/MP4 CodecPrivate:
+     * `av1C` for AV1, `avcC` for H.264, the WebM VP9 feature metadata for VP9). VP9 in WebM usually
+     * stores no configuration record — its profile lives in every frame — so a keyframe may be passed
+     * as a fallback source.
+     *
+     * @param string      $mimeType     Codec MIME type, e.g. `video/AV1`, `video/H264`, `video/VP9` (case-insensitive).
+     * @param string      $codecPrivate The track configuration record, or `''` if none was stored.
+     * @param string|null $keyframe     A keyframe of the stream, used when $codecPrivate is absent/insufficient.
+     * @return array<string, string> fmtp overrides to merge onto the advertised parameters; `[]` if none could be derived.
+     */
+    public static function fmtpFromBitstream(string $mimeType, string $codecPrivate, ?string $keyframe = null): array
+    {
+        return match (strtolower($mimeType)) {
+            'video/av1'  => self::av1FmtpFromBitstream($codecPrivate),
+            'video/h264' => self::h264FmtpFromBitstream($codecPrivate),
+            'video/vp9'  => self::vp9FmtpFromBitstream($codecPrivate, $keyframe),
+            default      => [],
+        };
+    }
+
+    /**
+     * Read `profile`/`level-idx`/`tier` from an AV1CodecConfigurationRecord (`av1C`).
+     *
+     * Layout (https://aomediacodec.github.io/av1-isobmff/#av1codecconfigurationrecord-syntax):
+     * byte 0 = marker(1) | version(7); byte 1 = seq_profile(3) | seq_level_idx_0(5);
+     * byte 2 = seq_tier_0(1) | high_bitdepth(1) | ...
+     *
+     * @return array<string, string>
+     */
+    private static function av1FmtpFromBitstream(string $av1c): array
+    {
+        if (\strlen($av1c) < 3 || (\ord($av1c[0]) & 0x80) === 0) {
+            return [];
+        }
+        $b1 = \ord($av1c[1]);
+        $b2 = \ord($av1c[2]);
+        return [
+            'profile'   => (string) (($b1 >> 5) & 0x07),
+            'level-idx' => (string) ($b1 & 0x1F),
+            'tier'      => (string) (($b2 >> 7) & 0x01),
+        ];
+    }
+
+    /**
+     * Read `profile-level-id` from an AVCDecoderConfigurationRecord (`avcC`): bytes 1-3 are
+     * AVCProfileIndication, profile_compatibility and AVCLevelIndication — exactly the three bytes
+     * of the SDP profile-level-id.
+     *
+     * @return array<string, string>
+     */
+    private static function h264FmtpFromBitstream(string $avcc): array
+    {
+        if (\strlen($avcc) < 4) {
+            return [];
+        }
+        return [
+            'level-asymmetry-allowed' => '1',
+            'packetization-mode'      => '1',
+            'profile-level-id'        => bin2hex($avcc[1].$avcc[2].$avcc[3]),
+        ];
+    }
+
+    /**
+     * Read the VP9 `profile-id`, from the WebM VP9 feature metadata (CodecPrivate) if present, else
+     * from the uncompressed header of a keyframe.
+     *
+     * @return array<string, string>
+     */
+    private static function vp9FmtpFromBitstream(string $vpcc, ?string $keyframe): array
+    {
+        $profile = self::vp9ProfileFromMetadata($vpcc);
+        if ($profile === null && $keyframe !== null) {
+            $profile = self::vp9ProfileFromFrame($keyframe);
+        }
+        return $profile === null ? [] : ['profile-id' => (string) $profile];
+    }
+
+    /**
+     * The WebM VP9 CodecPrivate is a sequence of {id byte, length byte, value} features; feature
+     * id 1 is the profile.
+     */
+    private static function vp9ProfileFromMetadata(string $vpcc): ?int
+    {
+        $offset = 0;
+        $length = \strlen($vpcc);
+        while ($offset + 2 <= $length) {
+            $id  = \ord($vpcc[$offset]);
+            $len = \ord($vpcc[$offset + 1]);
+            $offset += 2;
+            if ($offset + $len > $length) {
+                break;
+            }
+            if ($id === 1 && $len >= 1) {
+                return \ord($vpcc[$offset]);
+            }
+            $offset += $len;
+        }
+        return null;
+    }
+
+    /**
+     * The VP9 uncompressed header starts with frame_marker (2 bits = 0b10) then profile_low_bit and
+     * profile_high_bit; profile = (high << 1) | low.
+     */
+    private static function vp9ProfileFromFrame(string $frame): ?int
+    {
+        if ($frame === '') {
+            return null;
+        }
+        $b = \ord($frame[0]);
+        if (($b >> 6) !== 0b10) {
+            return null;
+        }
+        return ((($b >> 4) & 1) << 1) | (($b >> 5) & 1);
     }
 
     /**
