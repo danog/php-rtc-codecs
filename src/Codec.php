@@ -18,6 +18,7 @@ use Webrtc\Codecs\Audio\PCM\PCMaDecoder;
 use Webrtc\Codecs\Audio\PCM\PCMaEncoder;
 use Webrtc\Codecs\Audio\PCM\PCMuDecoder;
 use Webrtc\Codecs\Audio\PCM\PCMuEncoder;
+use Webrtc\Codecs\Video\Av1\Av1Encoder;
 use Webrtc\Codecs\Video\Vp8\Vp8Decoder;
 use Webrtc\Codecs\Video\Vp8\Vp8Encoder;
 use Webrtc\Codecs\Video\Vp8\Vp8PayloadDescriptor;
@@ -152,6 +153,8 @@ final class Codec
                 'profile-level-id' => $profileLevelId,
             ]);
         }
+        // AV1 is transmitted pre-encoded (see Av1Encoder); profile 0 is the 8-bit 4:2:0 profile.
+        $this->addVideoCodec('video/AV1', ['profile' => '0', 'level-idx' => '5', 'tier' => '0']);
     }
 
     /**
@@ -233,6 +236,7 @@ foreach ($this->headerExtensions[$kind] as $extension) {
             'video/h264' => new H264Encoder,
             'video/vp8'  => new Vp8Encoder,
             'video/vp9'  => new Vp9Encoder,
+            'video/av1'  => new Av1Encoder,
             default => throw new InvalidArgumentException("No encoder found for MIME type `$codec->mimeType`"),
         };
     }
