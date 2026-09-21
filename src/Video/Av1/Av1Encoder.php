@@ -140,6 +140,7 @@ final class Av1Encoder extends Encoder implements EncoderInterface
     {
         /** @var list<array{z: bool, y: bool, elems: list<string>}> $packets */
         $packets = [];
+        /** @var array{z: bool, y: bool, elems: list<string>} $current */
         $current = ['z' => false, 'y' => false, 'elems' => []];
         $currentSize = 1; // The aggregation header.
 
