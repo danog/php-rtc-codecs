@@ -19,6 +19,9 @@ use Webrtc\Codecs\Audio\PCM\PCMaEncoder;
 use Webrtc\Codecs\Audio\PCM\PCMuDecoder;
 use Webrtc\Codecs\Audio\PCM\PCMuEncoder;
 use Webrtc\Codecs\Video\Av1\Av1Encoder;
+use Webrtc\Codecs\Video\Av1\Av1PayloadDescriptor;
+use Webrtc\Codecs\Video\H265\H265Encoder;
+use Webrtc\Codecs\Video\H265\H265PayloadDescriptor;
 use Webrtc\Codecs\Video\Vp8\Vp8Decoder;
 use Webrtc\Codecs\Video\Vp8\Vp8Encoder;
 use Webrtc\Codecs\Video\Vp8\Vp8PayloadDescriptor;
@@ -160,6 +163,9 @@ final class Codec
         // AV1 fallback: profile 0 (8-bit 4:2:0 Main), Main tier; level-idx 5 (=level 3.1) is a mid
         // default only used when the bitstream's real level is unknown.
         $this->addVideoCodec('video/AV1', ['profile' => '0', 'level-idx' => '5', 'tier' => '0']);
+        // H.265 fallback: Main profile, Main tier, level 3.1 (level-id 93), single RTP stream —
+        // the defaults libwebrtc assumes for an H.265 payload type that omits its parameters.
+        $this->addVideoCodec('video/H265', ['level-id' => '93', 'profile-id' => '1', 'tier-flag' => '0', 'tx-mode' => 'SRST']);
     }
 
     /**
@@ -181,9 +187,31 @@ final class Codec
         return match (strtolower($mimeType)) {
             'video/av1'  => self::av1FmtpFromBitstream($codecPrivate),
             'video/h264' => self::h264FmtpFromBitstream($codecPrivate),
+            'video/h265' => self::h265FmtpFromBitstream($codecPrivate),
             'video/vp9'  => self::vp9FmtpFromBitstream($codecPrivate, $keyframe),
             default      => [],
         };
+    }
+
+    /**
+     * Read `profile-id`, `tier-flag` and `level-id` from an HEVCDecoderConfigurationRecord (`hvcC`):
+     * byte 1 is general_profile_space(2) general_tier_flag(1) general_profile_idc(5), and byte 12 is
+     * general_level_idc — the same numbers RFC 7798 puts in the SDP.
+     *
+     * @return array<string, string>
+     */
+    private static function h265FmtpFromBitstream(string $hvcc): array
+    {
+        if (\strlen($hvcc) < 13 || \ord($hvcc[0]) !== 1) {
+            return [];
+        }
+        $b1 = \ord($hvcc[1]);
+        return [
+            'level-id'   => (string) \ord($hvcc[12]),
+            'profile-id' => (string) ($b1 & 0x1F),
+            'tier-flag'  => (string) (($b1 >> 5) & 0x01),
+            'tx-mode'    => 'SRST',
+        ];
     }
 
     /**
@@ -362,6 +390,7 @@ foreach ($this->headerExtensions[$kind] as $extension) {
             'video/vp8'  => new Vp8Encoder,
             'video/vp9'  => new Vp9Encoder,
             'video/av1'  => new Av1Encoder,
+            'video/h265' => new H265Encoder,
             default => throw new InvalidArgumentException("No encoder found for MIME type `$codec->mimeType`"),
         };
     }
@@ -380,7 +409,29 @@ foreach ($this->headerExtensions[$kind] as $extension) {
             "video/vp8" => Vp8PayloadDescriptor::decode($payload),
             "video/vp9" => Vp9PayloadDescriptor::decode($payload),
             "video/h264" => H264PayloadDescriptor::decode($payload),
+            "video/h265" => H265PayloadDescriptor::decode($payload),
+            "video/av1" => Av1PayloadDescriptor::decode($payload),
             default => [true, $payload],
+        };
+    }
+
+    /**
+     * Turn the concatenated depayloaded packets of one frame into the frame's encoded bitstream.
+     *
+     * For most codecs the depayloaded packets simply concatenate into the frame. AV1 is the
+     * exception: an OBU may be fragmented across packets and the RTP format strips the OBU size
+     * fields, so the frame has to be reassembled once all of its packets are in (see
+     * {@see Av1PayloadDescriptor::assemble()}).
+     *
+     * @param RTCRtpCodecParameters $codec Codec parameters
+     * @param string $frame The concatenated depayloaded packets of the frame
+     * @return string The encoded frame
+     */
+    public static function finalizeFrame(RTCRtpCodecParameters $codec, string $frame): string
+    {
+        return match (strtolower($codec->mimeType)) {
+            "video/av1" => Av1PayloadDescriptor::assemble($frame),
+            default => $frame,
         };
     }
 

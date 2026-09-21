@@ -59,6 +59,12 @@ class CodecTest extends TestCase
                 'level-idx' => '5',
                 'tier' => '0',
             ]),
+            new RTCRtpCodecCapability('video/H265', 90000, null, [
+                'level-id' => '93',
+                'profile-id' => '1',
+                'tier-flag' => '0',
+                'tx-mode' => 'SRST',
+            ]),
         ];
         $this->assertEquals($expectedVideoCodecs, $capabilities->codecs);
 
