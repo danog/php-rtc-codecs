@@ -54,6 +54,11 @@ class CodecTest extends TestCase
                 'packetization-mode' => '1',
                 'profile-level-id' => '42e01f',
             ]),
+            new RTCRtpCodecCapability('video/AV1', 90000, null, [
+                'profile' => '0',
+                'level-idx' => '5',
+                'tier' => '0',
+            ]),
         ];
         $this->assertEquals($expectedVideoCodecs, $capabilities->codecs);
 
