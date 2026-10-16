@@ -33,6 +33,7 @@ class CodecTest extends TestCase
         $expectedAudioExtensions = [
             new RTCRtpHeaderExtensionCapability('urn:ietf:params:rtp-hdrext:sdes:mid'),
             new RTCRtpHeaderExtensionCapability('urn:ietf:params:rtp-hdrext:ssrc-audio-level'),
+            new RTCRtpHeaderExtensionCapability('http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01'),
         ];
         $this->assertEquals($expectedAudioExtensions, $capabilities->headerExtensions);
 
@@ -71,6 +72,7 @@ class CodecTest extends TestCase
         $expectedVideoExtensions = [
             new RTCRtpHeaderExtensionCapability('urn:ietf:params:rtp-hdrext:sdes:mid'),
             new RTCRtpHeaderExtensionCapability('http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time'),
+            new RTCRtpHeaderExtensionCapability('http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01'),
         ];
         $this->assertEquals($expectedVideoExtensions, $capabilities->headerExtensions);
 

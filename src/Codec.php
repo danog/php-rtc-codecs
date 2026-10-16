@@ -96,13 +96,16 @@ final class Codec
     private function initializeHeaderExtensions(): void
     {
         $this->headerExtensions = [
+            // The same ID for an extension of both kinds, as BUNDLE requires.
             'audio' => [
                 new RTCRtpHeaderExtensionParameters(1, 'urn:ietf:params:rtp-hdrext:sdes:mid'),
                 new RTCRtpHeaderExtensionParameters(2, 'urn:ietf:params:rtp-hdrext:ssrc-audio-level'),
+                new RTCRtpHeaderExtensionParameters(4, 'http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01'),
             ],
             'video' => [
                 new RTCRtpHeaderExtensionParameters(1, 'urn:ietf:params:rtp-hdrext:sdes:mid'),
                 new RTCRtpHeaderExtensionParameters(3, 'http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time'),
+                new RTCRtpHeaderExtensionParameters(4, 'http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01'),
             ],
         ];
     }
