@@ -27,12 +27,16 @@ final class EncodedPacket
      * @param int    $timestamp Presentation timestamp, already expressed in the codec's RTP clock.
      * @param bool   $keyframe  Whether this frame can be decoded without any previous frame.
      * @param ?int   $audioLevel Audio level in -dBov (0..127), if known.
+     * @param ?string $mimeType The MIME type of the codec of the frame (e.g. `video/H264`), if known: a
+     *                          received frame has the one of the payload type it arrived with, which can
+     *                          change in the middle of a stream.
      */
     public function __construct(
         private readonly string $data,
         private readonly int $timestamp,
         private readonly bool $keyframe = true,
         private readonly ?int $audioLevel = null,
+        private readonly ?string $mimeType = null,
     ) {
     }
 
@@ -54,6 +58,11 @@ final class EncodedPacket
     public function getAudioLevel(): ?int
     {
         return $this->audioLevel;
+    }
+
+    public function getMimeType(): ?string
+    {
+        return $this->mimeType;
     }
 
     public function getSize(): int
