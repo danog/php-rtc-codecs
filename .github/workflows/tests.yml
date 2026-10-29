@@ -50,7 +50,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ runner.tool_cache }}/ffmpeg-9.0.1
-          key: ffmpeg-9.0.1-ubuntu-github
+          key: ffmpeg-9.0.1-ubuntu-github-version
 
       - name: Install build deps and libvpx 1.15.0
         # codecs depends on av, which requires the FFI extension and an FFmpeg build
@@ -87,6 +87,9 @@ jobs:
             https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n9.0.1.tar.gz
           tar xzf ffmpeg-9.0.1.tar.gz
           cd FFmpeg-n9.0.1
+          # The VERSION file of the release tarballs: without it, the version FFmpeg reports (that php-rtc-av checks
+          # against its headers) is git describe's, of the checkout of this repository the source is extracted into.
+          echo 9.0.1 > VERSION
           ./configure --prefix="$RUNNER_TOOL_CACHE/ffmpeg-9.0.1" \
             --enable-shared --enable-gpl --enable-libx264 --enable-libopus --enable-libvpx
           make -j$(nproc)
